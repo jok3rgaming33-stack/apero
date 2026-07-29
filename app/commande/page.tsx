@@ -1,20 +1,72 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronRight, MapPin, Clock, CreditCard, CheckCircle2, Banknote } from "lucide-react";
+import { useState, useMemo } from "react";
+import { ChevronRight, MapPin, Clock, CreditCard, CheckCircle2, Banknote, ChevronDown, Info } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import Link from "next/link";
 
 type Step = "livraison" | "creneau" | "paiement" | "confirmation";
 type ActiveStep = Exclude<Step, "confirmation">;
 
-const TIME_SLOTS = [
-  "12h00 – 14h00",
-  "14h00 – 16h00",
-  "16h00 – 18h00",
-  "18h00 – 20h00",
-  "20h00 – 22h00",
-];
+/** Génère tous les créneaux de 19h00 à 08h00 (lendemain) par pas de 30 min */
+function buildAllSlots(): { label: string; startH: number; startM: number }[] {
+  const slots: { label: string; startH: number; startM: number }[] = [];
+  // 19h00 → 23h30 (soirée)
+  for (let h = 19; h <= 23; h++) {
+    for (const m of [0, 30]) {
+      const endH = m === 30 ? h + 1 : h;
+      const endM = m === 30 ? 0 : 30;
+      slots.push({
+        label: `${String(h).padStart(2, "0")}h${String(m).padStart(2, "0")} – ${String(endH).padStart(2, "0")}h${String(endM).padStart(2, "0")}`,
+        startH: h,
+        startM: m,
+      });
+    }
+  }
+  // 00h00 → 07h30 (nuit)
+  for (let h = 0; h <= 7; h++) {
+    for (const m of [0, 30]) {
+      if (h === 7 && m === 30) break;
+      const endH = m === 30 ? h + 1 : h;
+      const endM = m === 30 ? 0 : 30;
+      slots.push({
+        label: `${String(h).padStart(2, "0")}h${String(m).padStart(2, "0")} – ${String(endH).padStart(2, "0")}h${String(endM).padStart(2, "0")}`,
+        startH: h,
+        startM: m,
+      });
+    }
+  }
+  return slots;
+}
+
+const ALL_SLOTS = buildAllSlots();
+
+/** Retourne les créneaux disponibles selon le jour sélectionné */
+function getAvailableSlots(dayIndex: number): { label: string; disabled: boolean; reason?: string }[] {
+  const now = new Date();
+  const minH = now.getHours();
+  const minM = now.getMinutes();
+  // heure min = maintenant + 30 min
+  const minTotalMin = minH * 60 + minM + 30;
+
+  return ALL_SLOTS.map((slot) => {
+    const slotIsNight = slot.startH < 19; // 00h–07h30
+    const slotTotalMin = slot.startH * 60 + slot.startM;
+
+    if (dayIndex === 0) {
+      // Aujourd'hui : plage nuit (00h-08h) non disponible (commande non encore verrouillée)
+      if (slotIsNight) {
+        return { label: slot.label, disabled: true, reason: "Disponible uniquement après verrouillage d'une commande" };
+      }
+      // Créneau trop proche
+      if (slotTotalMin < minTotalMin) {
+        return { label: slot.label, disabled: true, reason: "Créneau dépassé" };
+      }
+    }
+    // Demain / Après-demain : tous les créneaux disponibles (précommande)
+    return { label: slot.label, disabled: false };
+  });
+}
 
 const DAYS = ["Aujourd'hui", "Demain", "Après-demain"];
 
@@ -50,6 +102,9 @@ export default function CommandePage() {
     cardCvc: "",
     cardName: "",
   });
+
+  const availableSlots = useMemo(() => getAvailableSlots(form.day), [form.day]);
+  const nightSlotCount = availableSlots.filter((s) => s.disabled && s.reason?.includes("verrouillage")).length;
 
   const deliveryFee = totalPrice >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
   const total = totalPrice + deliveryFee;
@@ -228,51 +283,94 @@ export default function CommandePage() {
                 className="rounded-2xl p-6 border"
                 style={{ background: "#1a1208", borderColor: "#2e2010" }}
               >
-                <h2 className="font-bold text-lg mb-5 flex items-center gap-2">
+                <h2 className="font-bold text-lg mb-2 flex items-center gap-2">
                   <Clock className="w-5 h-5" style={{ color: "#f5c518" }} />
                   Créneau de livraison
                 </h2>
-
-                {/* Day */}
-                <p className="text-sm font-medium mb-3" style={{ color: "#a89272" }}>
-                  Jour de livraison
+                <p className="text-xs mb-6" style={{ color: "#6b5540" }}>
+                  Créneaux disponibles de 19h00 à 08h00 par tranches de 30 minutes.
                 </p>
-                <div className="flex gap-3 mb-6">
-                  {DAYS.map((day, i) => (
-                    <button
-                      key={day}
-                      onClick={() => setForm({ ...form, day: i })}
-                      className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all"
-                      style={{
-                        background: form.day === i ? "#f5c518" : "#0f0b07",
-                        color: form.day === i ? "#0f0b07" : "#a89272",
-                        border: `1px solid ${form.day === i ? "#f5c518" : "#2e2010"}`,
-                      }}
-                    >
-                      {day}
-                    </button>
-                  ))}
+
+                {/* Day select */}
+                <label className="block text-xs font-medium mb-1.5" style={{ color: "#a89272" }}>
+                  Jour de livraison
+                </label>
+                <div className="relative mb-5">
+                  <select
+                    value={form.day}
+                    onChange={(e) => setForm({ ...form, day: Number(e.target.value), slot: "" })}
+                    className="w-full appearance-none px-4 py-3 rounded-xl text-sm font-semibold outline-none pr-10"
+                    style={{ background: "#0f0b07", border: "1px solid #2e2010", color: "#f9f3e8" }}
+                  >
+                    {DAYS.map((day, i) => (
+                      <option key={day} value={i}>
+                        {day}{i > 0 ? " — Précommande" : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#6b5540" }} />
                 </div>
 
-                {/* Time slot */}
-                <p className="text-sm font-medium mb-3" style={{ color: "#a89272" }}>
-                  Heure de livraison
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
-                  {TIME_SLOTS.map((slot) => (
-                    <button
-                      key={slot}
-                      onClick={() => setForm({ ...form, slot })}
-                      className="py-3 rounded-xl text-sm font-semibold transition-all"
-                      style={{
-                        background: form.slot === slot ? "#f5c518" : "#0f0b07",
-                        color: form.slot === slot ? "#0f0b07" : "#a89272",
-                        border: `1px solid ${form.slot === slot ? "#f5c518" : "#2e2010"}`,
-                      }}
-                    >
-                      {slot}
-                    </button>
-                  ))}
+                {/* Preorder badge for demain / après-demain */}
+                {form.day > 0 && (
+                  <div
+                    className="flex items-start gap-2 rounded-xl p-3 mb-5 text-xs"
+                    style={{ background: "rgba(245,197,24,0.06)", border: "1px solid rgba(245,197,24,0.15)" }}
+                  >
+                    <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#f5c518" }} />
+                    <span style={{ color: "#a89272" }}>
+                      <strong style={{ color: "#f5c518" }}>Précommande</strong> — En commandant à l&apos;avance, tu t&apos;assures un créneau et une livraison rapide le jour choisi. Tous les créneaux de 19h00 à 08h00 sont disponibles.
+                    </span>
+                  </div>
+                )}
+
+                {/* Slot select — appears only after day is acknowledged */}
+                <label className="block text-xs font-medium mb-1.5" style={{ color: "#a89272" }}>
+                  Créneau horaire
+                </label>
+                <div className="relative mb-2">
+                  <select
+                    value={form.slot}
+                    onChange={(e) => setForm({ ...form, slot: e.target.value })}
+                    className="w-full appearance-none px-4 py-3 rounded-xl text-sm font-semibold outline-none pr-10"
+                    style={{ background: "#0f0b07", border: `1px solid ${form.slot ? "#f5c518" : "#2e2010"}`, color: form.slot ? "#f9f3e8" : "#6b5540" }}
+                  >
+                    <option value="">-- Choisir un créneau --</option>
+                    {availableSlots.map((s) => (
+                      <option key={s.label} value={s.disabled ? "" : s.label} disabled={s.disabled}>
+                        {s.disabled
+                          ? s.reason?.includes("verrouillage")
+                            ? `${s.label}  ·  Nuit (après verrouillage uniquement)`
+                            : `${s.label}  ·  Créneau passé`
+                          : s.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#6b5540" }} />
+                </div>
+
+                {/* Night slots notice (today only) */}
+                {form.day === 0 && nightSlotCount > 0 && (
+                  <div
+                    className="flex items-start gap-2 rounded-xl p-3 mb-5 text-xs mt-3"
+                    style={{ background: "rgba(107,85,64,0.15)", border: "1px solid #2e2010" }}
+                  >
+                    <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#a89272" }} />
+                    <span style={{ color: "#6b5540" }}>
+                      Les créneaux de nuit (00h00 – 08h00) sont accessibles uniquement après verrouillage d&apos;une commande. Pour les réserver dès maintenant, sélectionne <strong style={{ color: "#a89272" }}>Demain</strong> ou <strong style={{ color: "#a89272" }}>Après-demain</strong>.
+                    </span>
+                  </div>
+                )}
+
+                {/* Disclaimer */}
+                <div
+                  className="flex items-start gap-2 rounded-xl p-3 mb-6 text-xs mt-3"
+                  style={{ background: "rgba(245,197,24,0.04)", border: "1px solid rgba(245,197,24,0.1)" }}
+                >
+                  <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#f5c518" }} />
+                  <span style={{ color: "#6b5540" }}>
+                    Le vendeur s&apos;engage à faire tout son possible pour respecter le créneau choisi. Des événements extérieurs (circulation, météo, volume de commandes) peuvent exceptionnellement engendrer un retard. Nous vous en informerons par SMS ou email dès que possible.
+                  </span>
                 </div>
 
                 <div className="flex gap-3">
