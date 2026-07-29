@@ -18,7 +18,7 @@ export default function CategoriesSection() {
           style={{ fontFamily: "var(--font-playfair)" }}
         >
           Des moments, des amis, des{" "}
-          <span style={{ color: "#f5c518", fontStyle: "italic" }}>apéros</span>
+          <span style={{ color: "#f5c518", fontStyle: "italic" }}>formules</span>
         </h2>
         <p className="text-base" style={{ color: "#a89272" }}>
           Choisis ta vibe, on s&apos;occupe du reste.
@@ -68,7 +68,7 @@ export default function CategoriesSection() {
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all border"
           style={{ borderColor: "#f5c518", color: "#f5c518", background: "rgba(245,197,24,0.07)" }}
         >
-          Voir toutes les box
+          Voir toutes les formules
         </Link>
       </div>
     </section>

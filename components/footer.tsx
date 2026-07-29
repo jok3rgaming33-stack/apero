@@ -35,8 +35,7 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2">
               {[
-                { href: "/aperos", label: "Nos apéros" },
-                { href: "/occasions", label: "Occasions" },
+                { href: "/aperos", label: "Nos formules" },
                 { href: "/comment", label: "Comment ça marche ?" },
                 { href: "/nous", label: "Notre histoire" },
               ].map((l) => (

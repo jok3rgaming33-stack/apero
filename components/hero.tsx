@@ -93,7 +93,7 @@ export default function Hero() {
                 className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-base transition-all hover:opacity-90 active:scale-95"
                 style={{ background: "#f5c518", color: "#0f0b07" }}
               >
-                Découvrir nos box
+                Découvrir nos formules
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link

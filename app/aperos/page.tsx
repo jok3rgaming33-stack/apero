@@ -31,10 +31,10 @@ export default function AperosPage() {
               style={{ fontFamily: "var(--font-playfair)" }}
             >
               Nos{" "}
-              <span style={{ color: "#f5c518", fontStyle: "italic" }}>apéros</span>
+              <span style={{ color: "#f5c518", fontStyle: "italic" }}>formules</span>
             </h1>
             <p style={{ color: "#a89272" }}>
-              Choisis la box qui correspond à ton envie du moment.
+              Choisis la formule qui correspond à ton envie du moment.
             </p>
           </div>
 
