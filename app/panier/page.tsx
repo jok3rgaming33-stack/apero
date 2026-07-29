@@ -5,14 +5,10 @@ import Link from "next/link";
 import { Minus, Plus, Trash2, ArrowRight, ShoppingBag } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 
-const DELIVERY_FEE = 3.9;
-const FREE_DELIVERY_THRESHOLD = 49;
-
 export default function PanierPage() {
   const { items, updateQuantity, removeItem, totalPrice, totalItems } = useCart();
 
-  const deliveryFee = totalPrice >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
-  const total = totalPrice + deliveryFee;
+  const total = totalPrice;
 
   if (items.length === 0) {
     return (
@@ -58,25 +54,13 @@ export default function PanierPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Items */}
           <div className="lg:col-span-2 flex flex-col gap-4">
-            {/* Free delivery banner */}
-            {totalPrice < FREE_DELIVERY_THRESHOLD && (
-              <div
-                className="rounded-xl p-3 text-sm text-center"
-                style={{ background: "rgba(245,197,24,0.1)", border: "1px solid rgba(245,197,24,0.2)", color: "#f5c518" }}
-              >
-                Plus que{" "}
-                <strong>{(FREE_DELIVERY_THRESHOLD - totalPrice).toFixed(2)} €</strong>{" "}
-                pour la livraison gratuite !
-              </div>
-            )}
-            {totalPrice >= FREE_DELIVERY_THRESHOLD && (
-              <div
-                className="rounded-xl p-3 text-sm text-center"
-                style={{ background: "rgba(45,154,62,0.1)", border: "1px solid rgba(45,154,62,0.3)", color: "#2D9A3E" }}
-              >
-                Livraison offerte !
-              </div>
-            )}
+            {/* Free delivery banner — always free */}
+            <div
+              className="rounded-xl p-3 text-sm text-center font-semibold"
+              style={{ background: "rgba(45,154,62,0.1)", border: "1px solid rgba(45,154,62,0.3)", color: "#2D9A3E" }}
+            >
+              Livraison toujours offerte dans toute notre zone
+            </div>
 
             {items.map(({ product, quantity }) => (
               <div
@@ -163,12 +147,7 @@ export default function PanierPage() {
               </div>
               <div className="flex justify-between">
                 <span style={{ color: "#a89272" }}>Livraison</span>
-                <span
-                  className="font-medium"
-                  style={{ color: deliveryFee === 0 ? "#2D9A3E" : "#f9f3e8" }}
-                >
-                  {deliveryFee === 0 ? "Gratuite" : `${deliveryFee.toFixed(2)} €`}
-                </span>
+                <span className="font-semibold" style={{ color: "#2D9A3E" }}>Gratuite</span>
               </div>
               <div
                 className="h-px"

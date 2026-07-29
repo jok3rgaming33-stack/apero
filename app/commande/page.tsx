@@ -80,9 +80,6 @@ function getAvailableSlots(
 
 const DAYS = ["Aujourd'hui", "Demain", "Après-demain"];
 
-const DELIVERY_FEE = 3.9;
-const FREE_DELIVERY_THRESHOLD = 49;
-
 const STEPS: { id: Step; label: string; icon: React.ReactNode }[] = [
   { id: "livraison", label: "Livraison", icon: <MapPin className="w-4 h-4" /> },
   { id: "creneau", label: "Créneau", icon: <Clock className="w-4 h-4" /> },
@@ -122,8 +119,7 @@ export default function CommandePage() {
   ).length;
   const selectedSlotStatus = availableSlots.find((s) => s.label === form.slot)?.status;
 
-  const deliveryFee = totalPrice >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
-  const total = totalPrice + deliveryFee;
+  const total = totalPrice;
   const stepIndex = STEPS.findIndex((s) => s.id === step);
 
   const handleConfirm = () => {
@@ -641,11 +637,15 @@ export default function CommandePage() {
             <div className="flex flex-col gap-2 text-sm">
               <div className="flex justify-between">
                 <span style={{ color: "#a89272" }}>Livraison</span>
-                <span style={{ color: deliveryFee === 0 ? "#2D9A3E" : "#f9f3e8" }}>
-                  {deliveryFee === 0 ? "Gratuite" : `${deliveryFee.toFixed(2)} €`}
-                </span>
+                <span style={{ color: "#2D9A3E" }} className="font-semibold">Gratuite</span>
               </div>
-              <div className="flex justify-between font-bold text-base">
+              <div
+                className="rounded-lg px-3 py-2 text-xs"
+                style={{ background: "rgba(45,154,62,0.07)", border: "1px solid rgba(45,154,62,0.2)", color: "#2D9A3E" }}
+              >
+                Livraison toujours offerte dans toute notre zone
+              </div>
+              <div className="flex justify-between font-bold text-base mt-1">
                 <span>Total</span>
                 <span style={{ color: "#f5c518" }}>{total.toFixed(2)} €</span>
               </div>

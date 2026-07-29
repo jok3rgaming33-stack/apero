@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ShoppingBag,
   MapPin,
@@ -24,8 +25,8 @@ const STEPS = [
     Icon: MapPin,
     title: "Ajoute au panier & renseigne ta livraison",
     description:
-      "Indique ton adresse complète. On livre partout en France métropolitaine. Vérifie que quelqu'un sera présent pour réceptionner.",
-    detail: "Livraison 7j/7",
+      "Indique ton adresse complète. On livre dans toute notre zone (Bordeaux Métropole et communes alentour). La livraison est toujours gratuite. Vérifie que quelqu'un sera présent pour réceptionner.",
+    detail: "Livraison 7j/7 — toujours gratuite",
   },
   {
     number: "03",
@@ -56,7 +57,7 @@ const STEPS = [
 const FAQS = [
   {
     q: "Quelle est la zone de livraison ?",
-    a: "Nous livrons actuellement en Île-de-France et dans les grandes agglomérations françaises. La couverture s'étend régulièrement.",
+    a: "Nous livrons dans Bordeaux et toute la Bordeaux Métropole : Mérignac, Pessac, Talence, Bègles, Villenave d'Ornon, Gradignan, Floirac, Cenon, Lormont, Le Bouscat, Bruges, Eysines, Blanquefort, Le Taillan, Parempuyre, Ambarès, Carbon-Blanc, Bassens, Artigues, Bouliac et autres communes de la zone. Consulte la carte ci-dessus pour le détail.",
   },
   {
     q: "Puis-je commander sans créer de compte ?",
@@ -182,6 +183,72 @@ export default function CommentPage() {
               <p className="text-xs leading-relaxed" style={{ color: "#a89272" }}>{desc}</p>
             </div>
           ))}
+        </div>
+
+        {/* Delivery zone map */}
+        <div className="mt-16">
+          <div className="text-center mb-6">
+            <span
+              className="inline-block text-xs font-bold uppercase tracking-widest mb-4 px-3 py-1 rounded-full"
+              style={{ background: "rgba(245,197,24,0.1)", color: "#f5c518", border: "1px solid rgba(245,197,24,0.2)" }}
+            >
+              Zone de livraison
+            </span>
+            <h2
+              className="text-2xl font-bold mb-2"
+              style={{ fontFamily: "var(--font-playfair)" }}
+            >
+              Les communes où nous{" "}
+              <span style={{ color: "#f5c518", fontStyle: "italic" }}>livrons</span>
+            </h2>
+            <p className="text-sm" style={{ color: "#a89272" }}>
+              Bordeaux Métropole et communes alentour —{" "}
+              <span style={{ color: "#2D9A3E" }} className="font-semibold">livraison toujours gratuite</span>
+            </p>
+          </div>
+
+          <div
+            className="rounded-2xl overflow-hidden border"
+            style={{ borderColor: "#2e2010" }}
+          >
+            <Image
+              src="/zone-livraison.jpg"
+              alt="Carte des communes livrées par ApéroMaison — Bordeaux Métropole"
+              width={1024}
+              height={1024}
+              className="w-full h-auto"
+              priority
+            />
+          </div>
+
+          {/* Communes list */}
+          <div
+            className="mt-4 rounded-xl p-4 border"
+            style={{ background: "#1a1208", borderColor: "#2e2010" }}
+          >
+            <p className="text-xs font-semibold mb-3" style={{ color: "#a89272" }}>
+              Communes desservies
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                "Bordeaux", "Mérignac", "Pessac", "Talence", "Bègles",
+                "Villenave d'Ornon", "Gradignan", "Floirac", "Cenon", "Lormont",
+                "Le Bouscat", "Bruges", "Eysines", "Le Haillan", "Blanquefort",
+                "Le Taillan-Médoc", "Parempuyre", "Ambarès-et-Lagrave", "Carbon-Blanc",
+                "Bassens", "Artigues", "Bouliac", "Saint-Aubin-de-Médoc",
+                "Saint-Médard-en-Jalles", "Martignas-sur-Jalle", "Ambès",
+                "Saint-Louis-de-Montferrand", "Saint-Vincent-de-Paul",
+              ].map((commune) => (
+                <span
+                  key={commune}
+                  className="text-xs px-2.5 py-1 rounded-full"
+                  style={{ background: "rgba(245,197,24,0.07)", border: "1px solid rgba(245,197,24,0.15)", color: "#a89272" }}
+                >
+                  {commune}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* FAQ */}
