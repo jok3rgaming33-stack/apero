@@ -165,14 +165,6 @@ export const PRODUCTS: Product[] = [
   },
 ];
 
-export const OCCASIONS = [
-  { id: "anniversaire", label: "Anniversaire", icon: "🎂", description: "Fête-le comme il se doit" },
-  { id: "soiree", label: "Soirée entre amis", icon: "🥂", description: "Spontané ou organisé" },
-  { id: "bureau", label: "Afterwork", icon: "💼", description: "Détente après le boulot" },
-  { id: "romantique", label: "Soirée en duo", icon: "🌹", description: "Romantique et intime" },
-  { id: "sport", label: "Match / Sport", icon: "⚽", description: "Avant, pendant, après" },
-  { id: "barbecue", label: "Barbecue", icon: "🔥", description: "L'entrée en matière" },
-];
 
 export const LOYALTY_TIERS = [
   { name: "Apéritif", minPoints: 0, maxPoints: 99, color: "#a89272", perks: ["5% de réduction sur commande"] },
