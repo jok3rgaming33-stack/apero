@@ -202,7 +202,7 @@ export default function PanierPage() {
               className="mt-5 pt-5 border-t text-xs text-center"
               style={{ borderColor: "#2e2010", color: "#6b5540" }}
             >
-              Paiement sécurisé • Licence IV conforme
+              Carte ou espèces à la livraison • Licence IV conforme
             </div>
           </div>
         </div>

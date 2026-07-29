@@ -14,7 +14,7 @@ const TICKER_ITEMS = [
   "Livraison 7j/7",
   "Licence IV & conforme",
   "Entre amis, que du bon",
-  "Paiement sécurisé",
+  "Paiement carte ou espèces",
   "Produits de qualité",
   "100% légal & responsable",
 ];

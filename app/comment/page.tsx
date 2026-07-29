@@ -38,10 +38,10 @@ const STEPS = [
   {
     number: "04",
     Icon: CreditCard,
-    title: "Paie en sécurité",
+    title: "Choisis ton mode de paiement",
     description:
-      "Règlement par carte bancaire. Toutes les données sont chiffrées. Tu reçois un email de confirmation immédiatement.",
-    detail: "Paiement 100% sécurisé",
+      "Règle par carte bancaire (données chiffrées) ou en espèces à la réception de ta commande. Tu reçois un email de confirmation immédiatement.",
+    detail: "Carte ou espèces",
   },
   {
     number: "05",

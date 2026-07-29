@@ -15,9 +15,9 @@ const STEPS = [
   },
   {
     number: "03",
-    title: "Paie en toute sécurité",
+    title: "Choisis ton mode de paiement",
     description:
-      "Règlement sécurisé par carte bancaire. Aucune surprise sur la facture.",
+      "Règle par carte bancaire en ligne ou en espèces directement à la livraison. Aucune surprise sur la facture.",
     icon: "💳",
   },
   {

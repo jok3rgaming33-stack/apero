@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronRight, MapPin, Clock, CreditCard, CheckCircle2 } from "lucide-react";
+import { ChevronRight, MapPin, Clock, CreditCard, CheckCircle2, Banknote } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import Link from "next/link";
 
@@ -31,6 +31,7 @@ const STEPS: { id: Step; label: string; icon: React.ReactNode }[] = [
 export default function CommandePage() {
   const { items, totalPrice, clearCart } = useCart();
   const [step, setStep] = useState<Step>("livraison");
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "cash">("card");
   const [form, setForm] = useState({
     prenom: "",
     nom: "",
@@ -301,39 +302,54 @@ export default function CommandePage() {
               >
                 <h2 className="font-bold text-lg mb-5 flex items-center gap-2">
                   <CreditCard className="w-5 h-5" style={{ color: "#f5c518" }} />
-                  Paiement sécurisé
+                  Mode de paiement
                 </h2>
 
-                <div className="flex flex-col gap-4 mb-6">
-                  {[
-                    { key: "cardName", label: "Nom sur la carte", type: "text", placeholder: "Jean Dupont" },
-                    { key: "cardNumber", label: "Numéro de carte", type: "text", placeholder: "1234 5678 9012 3456" },
-                  ].map(({ key, label, type, placeholder }) => (
-                    <div key={key}>
-                      <label className="block text-xs font-medium mb-1.5" style={{ color: "#a89272" }}>
-                        {label}
-                      </label>
-                      <input
-                        type={type}
-                        placeholder={placeholder}
-                        value={form[key as keyof typeof form] as string}
-                        onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-                        style={{ background: "#0f0b07", border: "1px solid #2e2010", color: "#f9f3e8" }}
-                      />
-                    </div>
-                  ))}
-                  <div className="grid grid-cols-2 gap-4">
+                {/* Payment method selector */}
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  <button
+                    onClick={() => setPaymentMethod("card")}
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all"
+                    style={{
+                      background: paymentMethod === "card" ? "rgba(245,197,24,0.1)" : "#0f0b07",
+                      borderColor: paymentMethod === "card" ? "#f5c518" : "#2e2010",
+                    }}
+                  >
+                    <CreditCard className="w-6 h-6" style={{ color: paymentMethod === "card" ? "#f5c518" : "#6b5540" }} />
+                    <span className="text-sm font-semibold" style={{ color: paymentMethod === "card" ? "#f5c518" : "#a89272" }}>
+                      Carte bancaire
+                    </span>
+                    <span className="text-xs" style={{ color: "#6b5540" }}>CB, Visa, Mastercard</span>
+                  </button>
+                  <button
+                    onClick={() => setPaymentMethod("cash")}
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all"
+                    style={{
+                      background: paymentMethod === "cash" ? "rgba(245,197,24,0.1)" : "#0f0b07",
+                      borderColor: paymentMethod === "cash" ? "#f5c518" : "#2e2010",
+                    }}
+                  >
+                    <Banknote className="w-6 h-6" style={{ color: paymentMethod === "cash" ? "#f5c518" : "#6b5540" }} />
+                    <span className="text-sm font-semibold" style={{ color: paymentMethod === "cash" ? "#f5c518" : "#a89272" }}>
+                      Espèces
+                    </span>
+                    <span className="text-xs" style={{ color: "#6b5540" }}>À la livraison</span>
+                  </button>
+                </div>
+
+                {/* Card fields */}
+                {paymentMethod === "card" && (
+                  <div className="flex flex-col gap-4 mb-6">
                     {[
-                      { key: "cardExpiry", label: "Expiration", placeholder: "MM/AA" },
-                      { key: "cardCvc", label: "CVC", placeholder: "123" },
-                    ].map(({ key, label, placeholder }) => (
+                      { key: "cardName", label: "Nom sur la carte", type: "text", placeholder: "Jean Dupont" },
+                      { key: "cardNumber", label: "Numéro de carte", type: "text", placeholder: "1234 5678 9012 3456" },
+                    ].map(({ key, label, type, placeholder }) => (
                       <div key={key}>
                         <label className="block text-xs font-medium mb-1.5" style={{ color: "#a89272" }}>
                           {label}
                         </label>
                         <input
-                          type="text"
+                          type={type}
                           placeholder={placeholder}
                           value={form[key as keyof typeof form] as string}
                           onChange={(e) => setForm({ ...form, [key]: e.target.value })}
@@ -342,37 +358,89 @@ export default function CommandePage() {
                         />
                       </div>
                     ))}
-                  </div>
-
-                  {/* Code promo */}
-                  <div>
-                    <label className="block text-xs font-medium mb-1.5" style={{ color: "#a89272" }}>
-                      Code promo (optionnel)
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="APERO2024"
-                        value={form.codePromo}
-                        onChange={(e) => setForm({ ...form, codePromo: e.target.value })}
-                        className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none uppercase"
-                        style={{ background: "#0f0b07", border: "1px solid #2e2010", color: "#f9f3e8" }}
-                      />
-                      <button
-                        className="px-4 py-2.5 rounded-xl text-sm font-semibold border"
-                        style={{ borderColor: "#2e2010", color: "#a89272" }}
-                      >
-                        Appliquer
-                      </button>
+                    <div className="grid grid-cols-2 gap-4">
+                      {[
+                        { key: "cardExpiry", label: "Expiration", placeholder: "MM/AA" },
+                        { key: "cardCvc", label: "CVC", placeholder: "123" },
+                      ].map(({ key, label, placeholder }) => (
+                        <div key={key}>
+                          <label className="block text-xs font-medium mb-1.5" style={{ color: "#a89272" }}>
+                            {label}
+                          </label>
+                          <input
+                            type="text"
+                            placeholder={placeholder}
+                            value={form[key as keyof typeof form] as string}
+                            onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                            className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                            style={{ background: "#0f0b07", border: "1px solid #2e2010", color: "#f9f3e8" }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div
+                      className="rounded-xl p-3 text-xs text-center"
+                      style={{ background: "rgba(245,197,24,0.06)", border: "1px solid rgba(245,197,24,0.15)", color: "#a89272" }}
+                    >
+                      Paiement sécurisé • Données chiffrées • Aucune donnée stockée
                     </div>
                   </div>
-                </div>
+                )}
 
-                <div
-                  className="rounded-xl p-3 mb-5 text-xs text-center"
-                  style={{ background: "rgba(245,197,24,0.06)", border: "1px solid rgba(245,197,24,0.15)", color: "#a89272" }}
-                >
-                  Paiement sécurisé • Données chiffrées • Aucune donnée stockée
+                {/* Cash info */}
+                {paymentMethod === "cash" && (
+                  <div className="mb-6">
+                    <div
+                      className="rounded-xl p-4 mb-4"
+                      style={{ background: "rgba(245,197,24,0.07)", border: "1px solid rgba(245,197,24,0.2)" }}
+                    >
+                      <p className="text-sm font-semibold mb-2" style={{ color: "#f5c518" }}>
+                        Paiement en espèces à la livraison
+                      </p>
+                      <ul className="flex flex-col gap-1.5">
+                        {[
+                          `Prépare la somme exacte de ${total.toFixed(2)} € si possible.`,
+                          "Le livreur ne peut pas garantir de rendu de monnaie pour les grosses coupures (> 50 €).",
+                          "Le paiement s'effectue au moment de la remise de la commande.",
+                          "Un reçu vous sera remis sur place.",
+                        ].map((line) => (
+                          <li key={line} className="text-xs flex items-start gap-2" style={{ color: "#a89272" }}>
+                            <span className="mt-0.5 shrink-0" style={{ color: "#f5c518" }}>•</span>
+                            {line}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div
+                      className="rounded-xl p-3 text-xs text-center"
+                      style={{ background: "rgba(45,154,62,0.07)", border: "1px solid rgba(45,154,62,0.25)", color: "#2D9A3E" }}
+                    >
+                      Aucun prépaiement requis — vous réglez uniquement à la réception
+                    </div>
+                  </div>
+                )}
+
+                {/* Promo code */}
+                <div className="mb-6">
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "#a89272" }}>
+                    Code promo (optionnel)
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="APERO2024"
+                      value={form.codePromo}
+                      onChange={(e) => setForm({ ...form, codePromo: e.target.value })}
+                      className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none uppercase"
+                      style={{ background: "#0f0b07", border: "1px solid #2e2010", color: "#f9f3e8" }}
+                    />
+                    <button
+                      className="px-4 py-2.5 rounded-xl text-sm font-semibold border"
+                      style={{ borderColor: "#2e2010", color: "#a89272" }}
+                    >
+                      Appliquer
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex gap-3">
@@ -385,11 +453,17 @@ export default function CommandePage() {
                   </button>
                   <button
                     onClick={handleConfirm}
-                    disabled={!form.cardNumber || !form.cardExpiry || !form.cardCvc}
+                    disabled={paymentMethod === "card" && (!form.cardNumber || !form.cardExpiry || !form.cardCvc)}
                     className="flex-[2] py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-40"
                     style={{ background: "#f5c518", color: "#0f0b07" }}
                   >
-                    Payer {total.toFixed(2)} €
+                    {paymentMethod === "cash" ? (
+                      <>
+                        <Banknote className="w-4 h-4" /> Confirmer — payer à la livraison
+                      </>
+                    ) : (
+                      <>Payer {total.toFixed(2)} €</>
+                    )}
                   </button>
                 </div>
               </div>
