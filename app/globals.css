@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+
+  /* Fonts */
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-playfair);
+
+  /* Radius */
+  --radius: 0.75rem;
+}
+
+:root {
+  /* Dark festive palette */
+  --background: #0f0b07;
+  --foreground: #f9f3e8;
+  --primary: #f5c518;
+  --primary-foreground: #0f0b07;
+  --secondary: #1e1610;
+  --secondary-foreground: #f9f3e8;
+  --muted: #2a1f12;
+  --muted-foreground: #a89272;
+  --accent: #f5c518;
+  --accent-foreground: #0f0b07;
+  --card: #1a1208;
+  --card-foreground: #f9f3e8;
+  --border: #2e2010;
+  --destructive: #e05252;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Category card colors */
+.cat-classique { background: #E8580A; }
+.cat-festif    { background: #8B3FC9; }
+.cat-gourmand  { background: #2D9A3E; }
+.cat-healthy   { background: #1A7CC5; }
+
+/* Gold glow */
+.gold-glow {
+  box-shadow: 0 0 30px rgba(245, 197, 24, 0.15);
+}
+
+/* Trust ticker */
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-track {
+  animation: ticker 25s linear infinite;
+}
+
+/* Fade-in utility */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  animation: fadeUp 0.6s ease-out forwards;
+}
