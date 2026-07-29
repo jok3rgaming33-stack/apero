@@ -6,6 +6,7 @@ import { useCart } from "@/lib/cart-context";
 import Link from "next/link";
 
 type Step = "livraison" | "creneau" | "paiement" | "confirmation";
+type ActiveStep = Exclude<Step, "confirmation">;
 
 const TIME_SLOTS = [
   "12h00 – 14h00",
@@ -98,7 +99,8 @@ export default function CommandePage() {
     );
   }
 
-  if (items.length === 0 && step !== "confirmation") {
+  const isActiveStep = (s: Step): s is ActiveStep => s !== "confirmation";
+  if (items.length === 0 && isActiveStep(step)) {
     return (
       <main className="pt-24 pb-20 min-h-screen flex items-center justify-center">
         <div className="text-center">
