@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ChevronRight, MapPin, Clock, CreditCard, CheckCircle2, Banknote, ChevronDown, Info } from "lucide-react";
+import { ChevronRight, MapPin, Clock, CreditCard, CheckCircle2, Banknote, ChevronDown, Info, Users } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import { getBookedSlots, bookSlot, isSlotAccessible } from "@/lib/slots-store";
 import Link from "next/link";
 
 type Step = "livraison" | "creneau" | "paiement" | "confirmation";
@@ -41,30 +42,39 @@ function buildAllSlots(): { label: string; startH: number; startM: number }[] {
 
 const ALL_SLOTS = buildAllSlots();
 
-/** Retourne les créneaux disponibles selon le jour sélectionné */
-function getAvailableSlots(dayIndex: number): { label: string; disabled: boolean; reason?: string }[] {
+export type SlotStatus =
+  | { disabled: false; shared?: boolean }
+  | { disabled: true; reason: "past" | "night_lock" | "taken" };
+
+/** Retourne les créneaux disponibles selon le jour, l'heure actuelle et les réservations existantes */
+function getAvailableSlots(
+  dayIndex: number,
+  clientCodePostal: string
+): { label: string; status: SlotStatus }[] {
   const now = new Date();
-  const minH = now.getHours();
-  const minM = now.getMinutes();
-  // heure min = maintenant + 30 min
-  const minTotalMin = minH * 60 + minM + 30;
+  const minTotalMin = now.getHours() * 60 + now.getMinutes() + 30;
 
   return ALL_SLOTS.map((slot) => {
-    const slotIsNight = slot.startH < 19; // 00h–07h30
+    const slotIsNight = slot.startH < 19;
     const slotTotalMin = slot.startH * 60 + slot.startM;
 
+    // ── Règles horaires (aujourd'hui seulement) ──────────────────────────────
     if (dayIndex === 0) {
-      // Aujourd'hui : plage nuit (00h-08h) non disponible (commande non encore verrouillée)
       if (slotIsNight) {
-        return { label: slot.label, disabled: true, reason: "Disponible uniquement après verrouillage d'une commande" };
+        return { label: slot.label, status: { disabled: true, reason: "night_lock" } };
       }
-      // Créneau trop proche
       if (slotTotalMin < minTotalMin) {
-        return { label: slot.label, disabled: true, reason: "Créneau dépassé" };
+        return { label: slot.label, status: { disabled: true, reason: "past" } };
       }
     }
-    // Demain / Après-demain : tous les créneaux disponibles (précommande)
-    return { label: slot.label, disabled: false };
+
+    // ── Règle de disponibilité / partage ─────────────────────────────────────
+    const { accessible, sharedWith } = isSlotAccessible(dayIndex, slot.label, clientCodePostal);
+    if (!accessible) {
+      return { label: slot.label, status: { disabled: true, reason: "taken" } };
+    }
+
+    return { label: slot.label, status: { disabled: false, shared: !!sharedWith } };
   });
 }
 
@@ -103,14 +113,23 @@ export default function CommandePage() {
     cardName: "",
   });
 
-  const availableSlots = useMemo(() => getAvailableSlots(form.day), [form.day]);
-  const nightSlotCount = availableSlots.filter((s) => s.disabled && s.reason?.includes("verrouillage")).length;
+  const availableSlots = useMemo(
+    () => getAvailableSlots(form.day, form.codePostal),
+    [form.day, form.codePostal]
+  );
+  const nightSlotCount = availableSlots.filter(
+    (s) => s.status.disabled && (s.status as { disabled: true; reason: string }).reason === "night_lock"
+  ).length;
+  const selectedSlotStatus = availableSlots.find((s) => s.label === form.slot)?.status;
 
   const deliveryFee = totalPrice >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
   const total = totalPrice + deliveryFee;
   const stepIndex = STEPS.findIndex((s) => s.id === step);
 
   const handleConfirm = () => {
+    if (form.slot) {
+      bookSlot(form.day, form.slot, form.codePostal);
+    }
     clearCart();
     setStep("confirmation");
   };
@@ -324,35 +343,66 @@ export default function CommandePage() {
                   </div>
                 )}
 
-                {/* Slot select — appears only after day is acknowledged */}
+                {/* Slot select */}
                 <label className="block text-xs font-medium mb-1.5" style={{ color: "#a89272" }}>
                   Créneau horaire
+                  {!form.codePostal && (
+                    <span className="ml-2 font-normal" style={{ color: "#6b5540" }}>
+                      (renseigne ton code postal à l&apos;étape précédente pour voir la disponibilité exacte)
+                    </span>
+                  )}
                 </label>
                 <div className="relative mb-2">
                   <select
                     value={form.slot}
                     onChange={(e) => setForm({ ...form, slot: e.target.value })}
                     className="w-full appearance-none px-4 py-3 rounded-xl text-sm font-semibold outline-none pr-10"
-                    style={{ background: "#0f0b07", border: `1px solid ${form.slot ? "#f5c518" : "#2e2010"}`, color: form.slot ? "#f9f3e8" : "#6b5540" }}
+                    style={{
+                      background: "#0f0b07",
+                      border: `1px solid ${form.slot ? "#f5c518" : "#2e2010"}`,
+                      color: form.slot ? "#f9f3e8" : "#6b5540",
+                    }}
                   >
                     <option value="">-- Choisir un créneau --</option>
-                    {availableSlots.map((s) => (
-                      <option key={s.label} value={s.disabled ? "" : s.label} disabled={s.disabled}>
-                        {s.disabled
-                          ? s.reason?.includes("verrouillage")
-                            ? `${s.label}  ·  Nuit (après verrouillage uniquement)`
-                            : `${s.label}  ·  Créneau passé`
-                          : s.label}
-                      </option>
-                    ))}
+                    {availableSlots.map((s) => {
+                      const st = s.status;
+                      const isDisabled = st.disabled;
+                      const suffix = isDisabled
+                        ? st.reason === "night_lock"
+                          ? "  ·  Nuit — après verrouillage"
+                          : st.reason === "past"
+                          ? "  ·  Créneau passé"
+                          : "  ·  Complet"
+                        : !st.disabled && st.shared
+                        ? "  ·  Mutualisé (zone proche)"
+                        : "";
+                      return (
+                        <option key={s.label} value={isDisabled ? "" : s.label} disabled={isDisabled}>
+                          {s.label}{suffix}
+                        </option>
+                      );
+                    })}
                   </select>
                   <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#6b5540" }} />
                 </div>
 
+                {/* Shared slot notice */}
+                {form.slot && selectedSlotStatus && !selectedSlotStatus.disabled && (selectedSlotStatus as { disabled: false; shared?: boolean }).shared && (
+                  <div
+                    className="flex items-start gap-2 rounded-xl p-3 mb-3 text-xs mt-2"
+                    style={{ background: "rgba(45,154,62,0.07)", border: "1px solid rgba(45,154,62,0.25)" }}
+                  >
+                    <Users className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#2D9A3E" }} />
+                    <span style={{ color: "#2D9A3E" }}>
+                      Une commande est déjà prévue dans ta zone sur ce créneau — le livreur passera dans ton secteur, ta livraison est bien confirmée.
+                    </span>
+                  </div>
+                )}
+
                 {/* Night slots notice (today only) */}
                 {form.day === 0 && nightSlotCount > 0 && (
                   <div
-                    className="flex items-start gap-2 rounded-xl p-3 mb-5 text-xs mt-3"
+                    className="flex items-start gap-2 rounded-xl p-3 mb-3 text-xs mt-2"
                     style={{ background: "rgba(107,85,64,0.15)", border: "1px solid #2e2010" }}
                   >
                     <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#a89272" }} />
