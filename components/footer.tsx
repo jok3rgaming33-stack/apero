@@ -109,7 +109,7 @@ export default function Footer() {
           style={{ borderColor: "#2e2010" }}
         >
           <p className="text-xs" style={{ color: "#4a3520" }}>
-            © 2024 ApéroMaison. Tous droits réservés.
+            © 2026 - HeisenWeb - Créateur de solutions innovantes - Tous droits réservés - Reproduction interdite - brevet déposé.
           </p>
           <p className="text-xs" style={{ color: "#4a3520" }}>
             L&apos;abus d&apos;alcool est dangereux pour la santé — à consommer avec
