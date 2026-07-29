@@ -78,15 +78,19 @@ export default function ProductCard({ product, onSelect }: Props) {
           {product.tagline}
         </p>
 
-        {/* Serves */}
+        {/* Serves + Popular */}
         <div className="flex items-center gap-1 mb-3">
-          <Users className="w-3.5 h-3.5" style={{ color: "#a89272" }} />
-          <span className="text-xs" style={{ color: "#a89272" }}>
-            {product.serves}
-          </span>
+          {product.serves && (
+            <>
+              <Users className="w-3.5 h-3.5" style={{ color: "#a89272" }} />
+              <span className="text-xs" style={{ color: "#a89272" }}>
+                {product.serves}
+              </span>
+            </>
+          )}
           {product.popular && (
             <>
-              <span className="mx-1" style={{ color: "#2e2010" }}>•</span>
+              {product.serves && <span className="mx-1" style={{ color: "#2e2010" }}>•</span>}
               <Star className="w-3.5 h-3.5 fill-current" style={{ color: "#f5c518" }} />
               <span className="text-xs" style={{ color: "#f5c518" }}>
                 Populaire

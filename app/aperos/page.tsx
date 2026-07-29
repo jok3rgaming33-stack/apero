@@ -1,14 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { PRODUCTS, CATEGORIES, type Category, type Product } from "@/lib/data";
 import ProductCard from "@/components/product-card";
 import ProductModal from "@/components/product-modal";
 
 export default function AperosPage() {
+  const searchParams = useSearchParams();
   const [activeCategory, setActiveCategory] = useState<Category | "all">("all");
   const [search, setSearch] = useState("");
+
+  // Pré-sélectionner la catégorie depuis l'URL (?cat=whisky)
+  useEffect(() => {
+    const cat = searchParams.get("cat") as Category | null;
+    if (cat && CATEGORIES.some((c) => c.id === cat)) {
+      setActiveCategory(cat);
+    }
+  }, [searchParams]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const filtered = PRODUCTS.filter((p) => {
@@ -45,7 +55,7 @@ export default function AperosPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#a89272" }} />
               <input
                 type="search"
-                placeholder="Rechercher une box..."
+                placeholder="Rechercher une formule..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none"
