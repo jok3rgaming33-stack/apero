@@ -20,6 +20,7 @@ import {
   Archive,
   MessageSquare,
   Bell,
+  Map,
 } from "lucide-react";
 import type { Order } from "@/lib/orders-store";
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from "@/lib/orders-store";
@@ -27,12 +28,31 @@ import type { ContactThread } from "@/lib/messages-store";
 import { THREAD_STATUS_LABELS, THREAD_STATUS_COLORS } from "@/lib/messages-store";
 import OrderChat from "@/components/admin/order-chat";
 import ThreadChat from "@/components/admin/thread-chat";
+import dynamic from "next/dynamic";
+
+const DeliveryTourMap = dynamic(
+  () => import("@/components/admin/delivery-tour-map"),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="flex-1 flex items-center justify-center"
+        style={{ background: "#0a0703" }}
+      >
+        <div
+          className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+          style={{ borderColor: "#2e2010", borderTopColor: "#f5c518" }}
+        />
+      </div>
+    ),
+  }
+);
 
 const ADMIN_SECRET = "aperomaison_admin_2026";
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 
-type Tab = "dashboard" | "orders" | "archives" | "messages" | "archived_messages";
+type Tab = "dashboard" | "orders" | "archives" | "messages" | "archived_messages" | "tour";
 
 const TABS: { id: Tab; label: string; Icon: React.ElementType }[] = [
   { id: "dashboard",         label: "Tableau de bord",       Icon: LayoutDashboard },
@@ -40,6 +60,7 @@ const TABS: { id: Tab; label: string; Icon: React.ElementType }[] = [
   { id: "archives",          label: "Archives commandes",    Icon: Archive },
   { id: "messages",          label: "Messagerie",            Icon: MessageSquare },
   { id: "archived_messages", label: "Discussions archivées", Icon: Clock },
+  { id: "tour",              label: "Tournée de livraison",  Icon: Map },
 ];
 
 type Visit = {
@@ -852,6 +873,12 @@ export default function AdminPage() {
               onSelect={setSelectedThreadId}
               onUpdate={(updated) => setArchivedThreads((prev) => prev.map((t) => t.id === updated.id ? updated : t))}
             />
+          )}
+
+          {tab === "tour" && (
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <DeliveryTourMap orders={[...orders, ...archivedOrders]} />
+            </div>
           )}
 
         </div>

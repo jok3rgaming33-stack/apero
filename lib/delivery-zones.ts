@@ -253,7 +253,7 @@ export const DELIVERY_POINTS: DeliveryPoint[] = [
     id: "depot-1",
     label: "Dépôt Principal — Bordeaux Centre",
     lat: 44.8558,
-    lng: 44.8558,
+    lng: -0.5792,
     type: "depot",
     active: true,
     zone: "bordeaux-centre",

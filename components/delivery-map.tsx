@@ -187,16 +187,16 @@ export default function DeliveryMap({
         center: [44.8378, -0.5792],
         zoom: compact ? 11 : 12,
         zoomControl: !compact,
-        attributionControl: false,
+        attributionControl: true,
         scrollWheelZoom: true,
       });
 
-      // Dark tile layer (Stadia Alidade Smooth Dark)
+      // OpenStreetMap standard tiles (free, no auth required)
       L.tileLayer(
-        "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
         {
-          maxZoom: 18,
-          attribution: "© Stadia Maps © OpenMapTiles © OpenStreetMap",
+          maxZoom: 19,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         }
       ).addTo(map);
 
