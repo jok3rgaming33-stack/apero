@@ -6,13 +6,10 @@ import { ShoppingCart, User, Menu, X, Package } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import ContactWidget from "@/components/contact-widget";
 
-import { MapPin } from "lucide-react";
-
 const NAV_LINKS = [
   { href: "/", label: "Accueil" },
   { href: "/aperos", label: "Nos formules" },
   { href: "/comment", label: "Comment ça marche ?" },
-  { href: "/zone", label: "Zone de livraison" },
   { href: "/nous", label: "Nous" },
 ];
 
@@ -125,15 +122,6 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/zone"
-              className="py-3 px-4 rounded-lg text-sm transition-colors flex items-center gap-2"
-              style={{ color: "#d4b896" }}
-              onClick={() => setMobileOpen(false)}
-            >
-              <MapPin className="w-4 h-4" />
-              Zone de livraison
-            </Link>
             <Link
               href="/suivi"
               className="py-3 px-4 rounded-lg text-sm transition-colors flex items-center gap-2"
