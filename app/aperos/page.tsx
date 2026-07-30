@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Search, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,7 +9,7 @@ import { PRODUCTS, CATEGORIES, type Category, type Product } from "@/lib/data";
 import ProductCard from "@/components/product-card";
 import ProductModal from "@/components/product-modal";
 
-export default function AperosPage() {
+function AperosPageInner() {
   const searchParams = useSearchParams();
   const [activeCategory, setActiveCategory] = useState<Category | "all">("all");
   const [search, setSearch] = useState("");
@@ -235,5 +235,13 @@ export default function AperosPage() {
         />
       )}
     </>
+  );
+}
+
+export default function AperosPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen pt-24" style={{ background: "#0f0b07" }} />}>
+      <AperosPageInner />
+    </Suspense>
   );
 }

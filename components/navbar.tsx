@@ -122,6 +122,15 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <Link
+              href="/suivi"
+              className="py-3 px-4 rounded-lg text-sm transition-colors flex items-center gap-2"
+              style={{ color: "#d4b896" }}
+              onClick={() => setMobileOpen(false)}
+            >
+              <Package className="w-4 h-4" />
+              Suivi de commande
+            </Link>
             <div className="mt-2 pt-2 border-t flex gap-2" style={{ borderColor: "#2e2010" }}>
               <Link
                 href="/compte"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search, Send, Paperclip, X, CheckCircle, Clock, Truck, Package, AlertCircle } from "lucide-react";
 import type { Order, OrderStatus } from "@/lib/orders-store";
@@ -61,7 +61,7 @@ function StatusTimeline({ status }: { status: OrderStatus }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function SuiviPage() {
+function SuiviPageInner() {
   const searchParams = useSearchParams();
   const [orderId, setOrderId] = useState(searchParams.get("id") ?? "");
   const [order, setOrder] = useState<Order | null>(null);
@@ -319,6 +319,14 @@ export default function SuiviPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SuiviPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen pt-24 px-4" style={{ background: "#0a0703" }} />}>
+      <SuiviPageInner />
+    </Suspense>
   );
 }
 

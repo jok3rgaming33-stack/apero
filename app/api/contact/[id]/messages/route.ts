@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addContactMessage, type Attachment } from "@/lib/messages-store";
+import { addContactMessage } from "@/lib/messages-store";
+import type { Attachment } from "@/lib/orders-store";
 
 export async function POST(
   req: NextRequest,
