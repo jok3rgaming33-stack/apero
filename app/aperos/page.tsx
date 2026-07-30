@@ -62,30 +62,40 @@ export default function AperosPage() {
 
           {/* ── Sticky filter bar ─────────────────────────────────────── */}
           <div
-            className="sticky top-16 z-20 -mx-4 px-4 py-3 mb-8 flex flex-col sm:flex-row gap-3 items-start sm:items-center"
+            className="sticky top-16 z-20 -mx-4 px-4 pt-3 pb-2 mb-8"
             style={{ background: "#0f0b07", borderBottom: "1px solid #2e2010" }}
           >
-            {/* Search */}
-            <div className="relative w-full sm:w-64 shrink-0">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-                style={{ color: "#6b5540" }}
-              />
-              <input
-                type="search"
-                placeholder="Rechercher..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 rounded-xl text-sm outline-none"
-                style={{ background: "#1a1208", border: "1px solid #2e2010", color: "#f9f3e8" }}
-              />
+            {/* Row 1 : search + result count */}
+            <div className="flex items-center gap-3 mb-2">
+              <div className="relative flex-1">
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+                  style={{ color: "#6b5540" }}
+                />
+                <input
+                  type="search"
+                  placeholder="Rechercher..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 rounded-xl text-sm outline-none"
+                  style={{ background: "#1a1208", border: "1px solid #2e2010", color: "#f9f3e8" }}
+                />
+              </div>
+              {(search || activeCategory !== "all") && (
+                <p className="shrink-0 text-xs whitespace-nowrap" style={{ color: "#6b5540" }}>
+                  {totalResults} résultat{totalResults !== 1 ? "s" : ""}
+                </p>
+              )}
             </div>
 
-            {/* Category pills — horizontally scrollable */}
-            <div className="flex gap-2 overflow-x-auto pb-0.5 flex-1 scrollbar-none">
+            {/* Row 2 : category pills — horizontally scrollable, no wrap */}
+            <div
+              className="flex gap-2 overflow-x-auto pb-2"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
               <button
                 onClick={() => setActiveCategory("all")}
-                className="shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all"
+                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all"
                 style={{
                   background: activeCategory === "all" ? "#f5c518" : "#1a1208",
                   color: activeCategory === "all" ? "#0f0b07" : "#a89272",
@@ -98,31 +108,21 @@ export default function AperosPage() {
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
-                  className="shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5"
+                  className="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5"
                   style={{
                     background: activeCategory === cat.id ? cat.color : "#1a1208",
                     color: activeCategory === cat.id ? "#fff" : "#a89272",
                     border: `1px solid ${activeCategory === cat.id ? cat.color : "#2e2010"}`,
                   }}
                 >
-                  {/* Color dot when inactive */}
-                  {activeCategory !== cat.id && (
-                    <span
-                      className="w-1.5 h-1.5 rounded-full shrink-0"
-                      style={{ background: cat.color }}
-                    />
-                  )}
+                  <span
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ background: activeCategory === cat.id ? "#fff" : cat.color }}
+                  />
                   {cat.label}
                 </button>
               ))}
             </div>
-
-            {/* Result count */}
-            {(search || activeCategory !== "all") && (
-              <p className="shrink-0 text-xs whitespace-nowrap" style={{ color: "#6b5540" }}>
-                {totalResults} résultat{totalResults !== 1 ? "s" : ""}
-              </p>
-            )}
           </div>
 
           {/* ── No results ────────────────────────────────────────────── */}
@@ -153,13 +153,13 @@ export default function AperosPage() {
 
                   {/* Section header */}
                   <div
-                    className="flex items-center justify-between mb-5 pb-4"
-                    style={{ borderBottom: `2px solid ${cat.color}22` }}
+                    className="flex items-center justify-between mb-4 pb-3"
+                    style={{ borderBottom: `2px solid ${cat.color}33` }}
                   >
-                    <div className="flex items-center gap-3">
-                      {/* Category image thumbnail */}
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {/* Thumbnail — hidden on small mobile, visible sm+ */}
                       <div
-                        className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 border"
+                        className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 border hidden sm:block"
                         style={{ borderColor: `${cat.color}44` }}
                       >
                         <Image
@@ -168,33 +168,30 @@ export default function AperosPage() {
                           fill
                           className="object-cover"
                         />
-                        <div
-                          className="absolute inset-0"
-                          style={{ background: `${cat.color}22` }}
-                        />
                       </div>
 
-                      <div>
-                        <div className="flex items-center gap-2">
-                          {/* Color pill */}
-                          <span
-                            className="inline-block w-2 h-2 rounded-full"
-                            style={{ background: cat.color }}
-                          />
+                      {/* Color bar accent — mobile only */}
+                      <div
+                        className="w-1 h-8 rounded-full shrink-0 sm:hidden"
+                        style={{ background: cat.color }}
+                      />
+
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h2
-                            className="text-xl font-bold"
+                            className="text-base sm:text-xl font-bold leading-tight"
                             style={{ fontFamily: "var(--font-playfair)", color: "#f9f3e8" }}
                           >
                             {cat.label}
                           </h2>
                           <span
-                            className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                            className="text-xs px-2 py-0.5 rounded-full font-semibold whitespace-nowrap"
                             style={{ background: `${cat.color}22`, color: cat.color }}
                           >
                             {catProducts.length} produit{catProducts.length > 1 ? "s" : ""}
                           </span>
                         </div>
-                        <p className="text-xs mt-0.5" style={{ color: "#6b5540" }}>
+                        <p className="text-xs mt-0.5 truncate" style={{ color: "#6b5540" }}>
                           {cat.description}
                         </p>
                       </div>
@@ -202,20 +199,19 @@ export default function AperosPage() {
 
                     {/* "Voir tout" link — only in "all" mode */}
                     {activeCategory === "all" && (
-                      <Link
-                        href={`/aperos?cat=${cat.id}`}
+                      <button
                         onClick={() => setActiveCategory(cat.id)}
-                        className="hidden sm:flex items-center gap-1 text-xs font-semibold shrink-0 transition-opacity hover:opacity-70"
+                        className="flex items-center gap-0.5 text-xs font-semibold shrink-0 ml-2 transition-opacity hover:opacity-70"
                         style={{ color: cat.color }}
                       >
                         Voir tout
                         <ChevronRight className="w-3.5 h-3.5" />
-                      </Link>
+                      </button>
                     )}
                   </div>
 
                   {/* Product grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                     {catProducts.map((product) => (
                       <ProductCard
                         key={product.id}

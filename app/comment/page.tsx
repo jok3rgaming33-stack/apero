@@ -110,49 +110,48 @@ export default function CommentPage() {
         <div className="relative">
           {/* Vertical line */}
           <div
-            className="absolute left-6 top-8 bottom-8 w-px hidden md:block"
+            className="absolute left-5 sm:left-6 top-10 bottom-10 w-px hidden md:block"
             style={{ background: "linear-gradient(180deg, #f5c518, #2e2010)" }}
           />
 
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-5">
             {STEPS.map((step, i) => (
-              <div key={step.number} className="flex gap-6 items-start">
+              <div key={step.number} className="flex gap-4 items-start">
                 {/* Icon circle */}
                 <div
-                  className="relative z-10 w-12 h-12 rounded-full flex items-center justify-center shrink-0"
+                  className="relative z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shrink-0 mt-0.5"
                   style={{
                     background: i === 0 ? "#f5c518" : "#1a1208",
                     border: `2px solid ${i === 0 ? "#f5c518" : "#2e2010"}`,
                   }}
                 >
                   <step.Icon
-                    className="w-5 h-5"
+                    className="w-4 h-4 sm:w-5 sm:h-5"
                     style={{ color: i === 0 ? "#0f0b07" : "#f5c518" }}
                   />
                 </div>
 
                 {/* Content */}
                 <div
-                  className="flex-1 rounded-2xl p-5 border"
+                  className="flex-1 rounded-2xl p-4 sm:p-5 border min-w-0"
                   style={{ background: "#1a1208", borderColor: "#2e2010" }}
                 >
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <div>
-                      <span className="text-xs font-bold" style={{ color: "#f5c518" }}>
-                        Étape {step.number}
-                      </span>
-                      <h2 className="font-bold text-lg text-foreground leading-tight">
-                        {step.title}
-                      </h2>
-                    </div>
+                  {/* Step label + detail badge — stacked on mobile */}
+                  <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                    <span className="text-xs font-bold" style={{ color: "#f5c518" }}>
+                      Étape {step.number}
+                    </span>
                     <span
-                      className="text-xs px-2.5 py-1 rounded-full shrink-0"
+                      className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full"
                       style={{ background: "rgba(245,197,24,0.1)", color: "#f5c518", border: "1px solid rgba(245,197,24,0.2)" }}
                     >
                       {step.detail}
                     </span>
                   </div>
-                  <p className="text-sm leading-relaxed" style={{ color: "#a89272" }}>
+                  <h2 className="font-bold text-sm sm:text-lg text-foreground leading-snug mb-2">
+                    {step.title}
+                  </h2>
+                  <p className="text-xs sm:text-sm leading-relaxed" style={{ color: "#a89272" }}>
                     {step.description}
                   </p>
                 </div>
