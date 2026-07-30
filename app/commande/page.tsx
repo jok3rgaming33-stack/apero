@@ -5,6 +5,20 @@ import { ChevronRight, MapPin, Clock, CreditCard, CheckCircle2, Banknote, Chevro
 import { useCart } from "@/lib/cart-context";
 import { getBookedSlots, bookSlot, isSlotAccessible } from "@/lib/slots-store";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+import type { DeliveryZone } from "@/lib/delivery-zones";
+
+const DeliveryMap = dynamic(() => import("@/components/delivery-map"), {
+  ssr: false,
+  loading: () => (
+    <div
+      className="rounded-xl border flex items-center justify-center"
+      style={{ height: 220, background: "#0d0906", borderColor: "#2e2010" }}
+    >
+      <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "#2e2010", borderTopColor: "#f5c518" }} />
+    </div>
+  ),
+});
 
 type Step = "livraison" | "creneau" | "paiement" | "confirmation";
 type ActiveStep = Exclude<Step, "confirmation">;
@@ -92,6 +106,7 @@ export default function CommandePage() {
   const [step, setStep] = useState<Step>("livraison");
   const [paymentMethod, setPaymentMethod] = useState<"card" | "cash">("card");
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [deliveryZone, setDeliveryZone] = useState<DeliveryZone | null>(null);
   const [form, setForm] = useState({
     prenom: "",
     nom: "",
@@ -281,10 +296,40 @@ export default function CommandePage() {
                 className="rounded-2xl p-6 border"
                 style={{ background: "#1a1208", borderColor: "#2e2010" }}
               >
-                <h2 className="font-bold text-lg mb-5 flex items-center gap-2">
+                <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
                   <MapPin className="w-5 h-5" style={{ color: "#f5c518" }} />
                   Adresse de livraison
                 </h2>
+
+                {/* Compact delivery map */}
+                <div className="mb-5">
+                  <DeliveryMap
+                    compact
+                    prefilledAddress={form.adresse}
+                    prefilledPostalCode={form.codePostal}
+                    onZoneSelected={(zone) => {
+                      setDeliveryZone(zone);
+                    }}
+                  />
+                  {deliveryZone && (
+                    <div
+                      className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
+                      style={{
+                        background: deliveryZone.status === "active" ? "#2D9A3E12" : deliveryZone.status === "busy" ? "#E8580A12" : "#ef444412",
+                        border: `1px solid ${deliveryZone.status === "active" ? "#2D9A3E33" : deliveryZone.status === "busy" ? "#E8580A33" : "#ef444433"}`,
+                        color: deliveryZone.status === "active" ? "#2D9A3E" : deliveryZone.status === "busy" ? "#E8580A" : "#ef4444",
+                      }}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "currentColor" }} />
+                      <span className="font-semibold">{deliveryZone.name}</span>
+                      <span className="opacity-70">·</span>
+                      <span>~{deliveryZone.eta} min</span>
+                      <span className="opacity-70">·</span>
+                      <span>{deliveryZone.fee === 0 ? "Livraison gratuite" : `Frais ${deliveryZone.fee.toFixed(2)} €`}</span>
+                    </div>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {[
                     { key: "prenom", label: "Prénom", type: "text", placeholder: "Jean" },
