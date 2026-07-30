@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ShoppingCart, User, Menu, X, Bell } from "lucide-react";
+import { ShoppingCart, User, Menu, X, Package } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import ContactWidget from "@/components/contact-widget";
 
 const NAV_LINKS = [
   { href: "/", label: "Accueil" },
@@ -49,13 +50,21 @@ export default function Navbar() {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          <button
+          {/* Suivi commande */}
+          <Link
+            href="/suivi"
             className="p-2 rounded-lg transition-colors hidden sm:flex items-center justify-center"
             style={{ color: "#a89272" }}
-            aria-label="Notifications"
+            aria-label="Suivi de commande"
+            title="Suivre ma commande"
           >
-            <Bell className="w-5 h-5" />
-          </button>
+            <Package className="w-5 h-5" />
+          </Link>
+
+          {/* Contact widget — positioned relative so the dropdown anchors correctly */}
+          <div className="relative hidden sm:block">
+            <ContactWidget />
+          </div>
 
           <Link
             href="/compte"

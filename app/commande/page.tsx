@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { ChevronRight, MapPin, Clock, CreditCard, CheckCircle2, Banknote, ChevronDown, Info, Users } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { getBookedSlots, bookSlot, isSlotAccessible } from "@/lib/slots-store";
@@ -91,6 +91,7 @@ export default function CommandePage() {
   const { items, totalPrice, clearCart } = useCart();
   const [step, setStep] = useState<Step>("livraison");
   const [paymentMethod, setPaymentMethod] = useState<"card" | "cash">("card");
+  const [orderId, setOrderId] = useState<string | null>(null);
   const [form, setForm] = useState({
     prenom: "",
     nom: "",
@@ -122,13 +123,38 @@ export default function CommandePage() {
   const total = totalPrice;
   const stepIndex = STEPS.findIndex((s) => s.id === step);
 
-  const handleConfirm = () => {
-    if (form.slot) {
-      bookSlot(form.day, form.slot, form.codePostal);
+  const handleConfirm = useCallback(async () => {
+    if (form.slot) bookSlot(form.day, form.slot, form.codePostal);
+    // Build cart items for the order
+    const orderItems = items.map(({ product, quantity }) => ({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity,
+      image: product.image ?? "",
+    }));
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientName: `${form.prenom} ${form.nom}`.trim(),
+          clientPhone: form.telephone,
+          clientAddress: `${form.adresse}, ${form.codePostal} ${form.ville}`,
+          clientEmail: form.email,
+          items: orderItems,
+        }),
+      });
+      if (res.ok) {
+        const order = await res.json();
+        setOrderId(order.id);
+      }
+    } catch {
+      // silently proceed even if API fails
     }
     clearCart();
     setStep("confirmation");
-  };
+  }, [form, items, clearCart]);
 
   if (step === "confirmation") {
     return (
@@ -151,13 +177,29 @@ export default function CommandePage() {
             Un email de confirmation a été envoyé à{" "}
             <strong className="text-foreground">{form.email || "ton adresse"}</strong>.
           </p>
-          <p className="text-sm mb-8" style={{ color: "#a89272" }}>
+          <p className="text-sm mb-4" style={{ color: "#a89272" }}>
             Ton apéro sera livré{" "}
             <strong className="text-foreground">
               {DAYS[form.day]} entre {form.slot || "le créneau choisi"}
             </strong>
             .
           </p>
+          {orderId && (
+            <div
+              className="rounded-xl p-4 mb-6 text-left"
+              style={{ background: "#1a1208", border: "1px solid #2e2010" }}
+            >
+              <p className="text-xs mb-1" style={{ color: "#6b5540" }}>Numéro de commande</p>
+              <p className="font-mono text-sm font-bold mb-3" style={{ color: "#f5c518" }}>{orderId}</p>
+              <Link
+                href={`/suivi?id=${orderId}`}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg"
+                style={{ background: "rgba(245,197,24,0.1)", color: "#f5c518", border: "1px solid rgba(245,197,24,0.2)" }}
+              >
+                Suivre ma commande en temps réel
+              </Link>
+            </div>
+          )}
           <Link
             href="/"
             className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold"
