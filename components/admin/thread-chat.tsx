@@ -62,10 +62,10 @@ export default function ThreadChat({ thread, onUpdate }: Props) {
 
       {/* Header */}
       <div
-        className="flex items-start justify-between gap-4 px-5 py-4 border-b"
+        className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 border-b"
         style={{ borderColor: "#2e2010", background: "#120d07" }}
       >
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <span className="font-bold text-sm" style={{ color: "#f9f3e8" }}>
             {thread.clientName}
           </span>
@@ -74,7 +74,7 @@ export default function ThreadChat({ thread, onUpdate }: Props) {
               {thread.clientPhone}
             </span>
           )}
-          <p className="text-xs mt-0.5 truncate" style={{ color: "#a89272" }}>
+          <p className="text-xs mt-0.5 break-words" style={{ color: "#a89272" }}>
             {thread.subject}
           </p>
         </div>
@@ -115,7 +115,7 @@ export default function ThreadChat({ thread, onUpdate }: Props) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-3">
+      <div className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-5 py-3 sm:py-4 flex flex-col gap-3">
         {thread.messages.map((msg) => {
           const isAdmin = msg.from === "admin";
           return (
@@ -169,7 +169,7 @@ export default function ThreadChat({ thread, onUpdate }: Props) {
 
       {/* Input */}
       <div
-        className="flex items-end gap-2 px-4 py-3 border-t"
+        className="flex items-end gap-2 px-3 sm:px-4 py-2.5 sm:py-3 border-t shrink-0"
         style={{ borderColor: "#2e2010", background: "#120d07" }}
       >
         <AttachmentUpload onAttach={(att) => setAttachments((p) => [...p, att])}>

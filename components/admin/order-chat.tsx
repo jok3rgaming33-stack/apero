@@ -98,28 +98,27 @@ export default function OrderChat({ order, onUpdate }: Props) {
 
       {/* Header */}
       <div
-        className="flex items-start justify-between gap-4 px-5 py-4 border-b"
+        className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 border-b"
         style={{ borderColor: "#2e2010", background: "#120d07" }}
       >
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-bold text-sm" style={{ color: "#f9f3e8" }}>
               {order.clientName}
             </span>
             <span className="text-xs" style={{ color: "#6b5540" }}>{order.clientPhone}</span>
-            <span className="text-xs" style={{ color: "#6b5540" }}>·</span>
-            <span className="text-xs truncate max-w-[200px]" style={{ color: "#6b5540" }}>
-              {order.clientAddress}
-            </span>
           </div>
-          <div className="flex items-center gap-3 mt-1 flex-wrap">
-            <span className="text-xs font-mono" style={{ color: "#6b5540" }}>{order.id}</span>
+          <p className="text-xs mt-0.5 break-words" style={{ color: "#6b5540" }}>
+            {order.clientAddress}
+          </p>
+          <div className="flex items-center gap-2 sm:gap-3 mt-1 flex-wrap">
+            <span className="text-[10px] sm:text-xs font-mono" style={{ color: "#6b5540" }}>{order.id}</span>
             <span className="text-xs" style={{ color: "#a89272" }}>
-              Total original : <strong style={{ color: "#f9f3e8" }}>{order.originalTotal.toFixed(2)} €</strong>
+              Total : <strong style={{ color: "#f9f3e8" }}>{order.originalTotal.toFixed(2)} €</strong>
             </span>
             {order.currentTotal !== order.originalTotal && (
               <span className="text-xs" style={{ color: "#f5c518" }}>
-                Total actuel : <strong>{order.currentTotal.toFixed(2)} €</strong>
+                Actuel : <strong>{order.currentTotal.toFixed(2)} €</strong>
               </span>
             )}
             {order.loyaltyPoints > 0 && (
@@ -127,43 +126,43 @@ export default function OrderChat({ order, onUpdate }: Props) {
                 className="text-xs px-2 py-0.5 rounded-full"
                 style={{ background: "rgba(45,154,62,0.15)", color: "#2D9A3E" }}
               >
-                +{order.loyaltyPoints} pts fidélité
+                +{order.loyaltyPoints} pts
               </span>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
           {/* Edit items */}
           <button
             onClick={() => setEditingItems((v) => !v)}
-            className="text-xs px-3 py-1.5 rounded-lg border transition-colors"
+            className="text-xs px-2.5 sm:px-3 py-1.5 rounded-lg border transition-colors"
             style={{
               borderColor: editingItems ? "#f5c518" : "#2e2010",
               color: editingItems ? "#f5c518" : "#a89272",
               background: editingItems ? "rgba(245,197,24,0.07)" : "#1a1208",
             }}
           >
-            {editingItems ? "Annuler" : "Modifier la commande"}
+            {editingItems ? "Annuler" : "Modifier"}
           </button>
 
           {/* Status selector */}
           <div className="relative">
             <button
               onClick={() => setShowStatusMenu((v) => !v)}
-              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border"
+              className="flex items-center gap-1.5 text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg border max-w-[11rem] sm:max-w-none"
               style={{ borderColor: statusColor, color: statusColor, background: `${statusColor}15` }}
             >
               <span
-                className="w-2 h-2 rounded-full"
+                className="w-2 h-2 rounded-full shrink-0"
                 style={{ background: statusColor }}
               />
-              {ORDER_STATUS_LABELS[order.status]}
-              <ChevronDown className="w-3 h-3" />
+              <span className="truncate">{ORDER_STATUS_LABELS[order.status]}</span>
+              <ChevronDown className="w-3 h-3 shrink-0" />
             </button>
             {showStatusMenu && (
               <div
-                className="absolute right-0 top-full mt-1 z-50 rounded-xl border overflow-hidden shadow-2xl min-w-[220px]"
+                className="absolute right-0 top-full mt-1 z-50 rounded-xl border overflow-hidden shadow-2xl min-w-[200px] max-w-[min(280px,90vw)]"
                 style={{ background: "#1a1208", borderColor: "#2e2010" }}
               >
                 {STATUSES.map((s) => (
@@ -255,7 +254,7 @@ export default function OrderChat({ order, onUpdate }: Props) {
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-3">
+      <div className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-5 py-3 sm:py-4 flex flex-col gap-3">
         {order.messages.map((msg) => {
           const isAdmin = msg.from === "admin";
           return (
@@ -314,7 +313,7 @@ export default function OrderChat({ order, onUpdate }: Props) {
 
       {/* Input */}
       <div
-        className="flex items-end gap-2 px-4 py-3 border-t"
+        className="flex items-end gap-2 px-3 sm:px-4 py-2.5 sm:py-3 border-t shrink-0"
         style={{ borderColor: "#2e2010", background: "#120d07" }}
       >
         <AttachmentUpload onAttach={(att) => setAttachments((p) => [...p, att])}>

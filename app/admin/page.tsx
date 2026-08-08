@@ -21,6 +21,9 @@ import {
   MessageSquare,
   Bell,
   Map,
+  ArrowLeft,
+  Menu,
+  X,
 } from "lucide-react";
 import type { Order } from "@/lib/orders-store";
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from "@/lib/orders-store";
@@ -118,11 +121,11 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center"
+      className="min-h-[100dvh] flex items-center justify-center px-4 py-8"
       style={{ background: "#0a0703" }}
     >
       <div
-        className="w-full max-w-sm rounded-2xl p-8 border"
+        className="w-full max-w-sm rounded-2xl p-6 sm:p-8 border"
         style={{ background: "#110e07", borderColor: "#2e2010" }}
       >
         <div className="flex items-center gap-3 mb-8">
@@ -291,27 +294,29 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const uniquePages = [...new Set(visits.map((v) => v.page))].sort();
 
   return (
-    <div className="min-h-screen" style={{ background: "#0a0703", color: "#f9f3e8" }}>
-      {/* Header */}
+    <div className="min-h-full" style={{ background: "#0a0703", color: "#f9f3e8" }}>
+      {/* Header dashboard (pas de double shell) */}
       <header
-        className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b"
+        className="sticky top-0 z-10 flex items-center justify-between gap-2 px-3 sm:px-6 py-3 sm:py-4 border-b"
         style={{ background: "#0a0703", borderColor: "#1e1608" }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            className="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center"
             style={{ background: "rgba(245,197,24,0.1)" }}
           >
             <BarChart2 className="w-4 h-4" style={{ color: "#f5c518" }} />
           </div>
-          <div>
-            <span className="font-bold text-sm">Admin</span>
-            <span className="text-xs ml-2" style={{ color: "#6b5540" }}>ApéroMaison</span>
+          <div className="min-w-0">
+            <span className="font-bold text-sm">Analytics</span>
+            <span className="hidden sm:inline text-xs ml-2" style={{ color: "#6b5540" }}>
+              ApéroMaison
+            </span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs" style={{ color: "#6b5540" }}>
-            Mis à jour à {lastRefresh.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <span className="hidden sm:inline text-xs" style={{ color: "#6b5540" }}>
+            {lastRefresh.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
           </span>
           <button
             onClick={fetchData}
@@ -323,15 +328,16 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           </button>
           <button
             onClick={onLogout}
-            className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border"
+            className="flex items-center gap-1.5 text-xs px-2 sm:px-3 py-2 rounded-lg border"
             style={{ borderColor: "#2e2010", color: "#a89272" }}
           >
-            <LogOut className="w-3.5 h-3.5" /> Déconnexion
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Déconnexion</span>
           </button>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col gap-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8 flex flex-col gap-4 sm:gap-8">
 
         {/* Stats */}
         {stats && (
@@ -407,8 +413,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           style={{ background: "#110e07", borderColor: "#2e2010" }}
         >
           {/* Table header with filters */}
-          <div className="flex flex-wrap items-center gap-3 p-4 border-b" style={{ borderColor: "#1e1608" }}>
-            <p className="text-sm font-semibold flex-1" style={{ color: "#f9f3e8" }}>
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 border-b" style={{ borderColor: "#1e1608" }}>
+            <p className="text-sm font-semibold sm:flex-1" style={{ color: "#f9f3e8" }}>
               Journal des visites
               <span className="ml-2 text-xs font-normal" style={{ color: "#6b5540" }}>
                 {filtered.length} entrée{filtered.length > 1 ? "s" : ""}
@@ -420,14 +426,15 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               placeholder="Rechercher (page, IP, navigateur...)"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="px-3 py-1.5 rounded-lg text-xs outline-none w-52"
+              className="px-3 py-2 sm:py-1.5 rounded-lg text-xs outline-none w-full sm:w-52"
               style={{ background: "#0f0b07", border: "1px solid #2e2010", color: "#f9f3e8" }}
             />
 
+            <div className="grid grid-cols-2 sm:flex gap-2">
             <select
               value={pageFilter}
               onChange={(e) => setPageFilter(e.target.value)}
-              className="px-3 py-1.5 rounded-lg text-xs outline-none"
+              className="px-3 py-2 sm:py-1.5 rounded-lg text-xs outline-none min-w-0"
               style={{ background: "#0f0b07", border: "1px solid #2e2010", color: "#a89272" }}
             >
               <option value="all">Toutes les pages</option>
@@ -439,7 +446,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             <select
               value={deviceFilter}
               onChange={(e) => setDeviceFilter(e.target.value)}
-              className="px-3 py-1.5 rounded-lg text-xs outline-none"
+              className="px-3 py-2 sm:py-1.5 rounded-lg text-xs outline-none min-w-0"
               style={{ background: "#0f0b07", border: "1px solid #2e2010", color: "#a89272" }}
             >
               <option value="all">Tous appareils</option>
@@ -447,6 +454,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               <option value="mobile">Mobile</option>
               <option value="tablet">Tablette</option>
             </select>
+            </div>
 
             <button
               onClick={handleClear}
@@ -551,15 +559,17 @@ function OrdersPanel({
 }: {
   orders: Order[];
   selectedId: string | null;
-  onSelect: (id: string) => void;
+  onSelect: (id: string | null) => void;
   onUpdate: (o: Order) => void;
 }) {
   const selected = orders.find((o) => o.id === selectedId) ?? null;
+  const showList = !selectedId;
+  const showDetail = !!selectedId;
   return (
-    <div className="flex flex-1 overflow-hidden">
-      {/* List */}
+    <div className="flex flex-1 min-h-0 overflow-hidden">
+      {/* Liste — plein écran mobile si rien de sélectionné */}
       <div
-        className="w-72 shrink-0 overflow-y-auto border-r flex flex-col"
+        className={`${showDetail ? "hidden md:flex" : "flex"} w-full md:w-72 shrink-0 overflow-y-auto md:border-r flex-col`}
         style={{ borderColor: "#2e2010", background: "#0d0906" }}
       >
         <div className="px-4 py-3 border-b shrink-0" style={{ borderColor: "#2e2010" }}>
@@ -574,16 +584,17 @@ function OrdersPanel({
           return (
             <button
               key={order.id}
+              type="button"
               onClick={() => onSelect(order.id)}
-              className="flex flex-col gap-1.5 px-4 py-3 border-b text-left"
+              className="flex flex-col gap-1.5 px-4 py-3.5 border-b text-left active:opacity-80"
               style={{ borderColor: "#1a1208", background: active ? "rgba(245,197,24,0.07)" : "transparent" }}
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-semibold truncate" style={{ color: "#f9f3e8" }}>
+                <span className="text-sm md:text-xs font-semibold truncate" style={{ color: "#f9f3e8" }}>
                   {order.clientName}
                 </span>
                 {unread > 0 && (
-                  <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0" style={{ background: "#ef4444", color: "#fff" }}>
+                  <span className="w-5 h-5 md:w-4 md:h-4 rounded-full flex items-center justify-center text-[10px] md:text-[9px] font-bold shrink-0" style={{ background: "#ef4444", color: "#fff" }}>
                     {unread}
                   </span>
                 )}
@@ -603,13 +614,36 @@ function OrdersPanel({
           );
         })}
       </div>
-      {/* Chat */}
-      <div className="flex-1 overflow-hidden">
+      {/* Détail / chat — plein écran mobile si sélection */}
+      <div className={`${showList ? "hidden md:flex" : "flex"} flex-1 min-w-0 min-h-0 overflow-hidden flex-col`}>
         {selected ? (
-          <OrderChat key={selected.id} order={selected} onUpdate={onUpdate} />
+          <>
+            <div
+              className="md:hidden flex items-center gap-2 px-3 py-2.5 border-b shrink-0"
+              style={{ borderColor: "#2e2010", background: "#120d07" }}
+            >
+              <button
+                type="button"
+                onClick={() => onSelect(null)}
+                className="flex items-center gap-1.5 text-xs font-semibold px-2 py-1.5 rounded-lg border"
+                style={{ borderColor: "#2e2010", color: "#f5c518" }}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Liste
+              </button>
+              <span className="text-xs font-medium truncate" style={{ color: "#f9f3e8" }}>
+                {selected.clientName}
+              </span>
+            </div>
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <OrderChat key={selected.id} order={selected} onUpdate={onUpdate} />
+            </div>
+          </>
         ) : (
-          <div className="h-full flex items-center justify-center">
-            <p className="text-sm" style={{ color: "#4a3a28" }}>Sélectionner une commande</p>
+          <div className="h-full flex items-center justify-center px-4">
+            <p className="text-sm text-center" style={{ color: "#4a3a28" }}>
+              Sélectionner une commande
+            </p>
           </div>
         )}
       </div>
@@ -627,14 +661,16 @@ function ThreadsPanel({
 }: {
   threads: ContactThread[];
   selectedId: string | null;
-  onSelect: (id: string) => void;
+  onSelect: (id: string | null) => void;
   onUpdate: (t: ContactThread) => void;
 }) {
   const selected = threads.find((t) => t.id === selectedId) ?? null;
+  const showList = !selectedId;
+  const showDetail = !!selectedId;
   return (
-    <div className="flex flex-1 overflow-hidden">
+    <div className="flex flex-1 min-h-0 overflow-hidden">
       <div
-        className="w-72 shrink-0 overflow-y-auto border-r flex flex-col"
+        className={`${showDetail ? "hidden md:flex" : "flex"} w-full md:w-72 shrink-0 overflow-y-auto md:border-r flex-col`}
         style={{ borderColor: "#2e2010", background: "#0d0906" }}
       >
         <div className="px-4 py-3 border-b shrink-0" style={{ borderColor: "#2e2010" }}>
@@ -649,16 +685,17 @@ function ThreadsPanel({
           return (
             <button
               key={thread.id}
+              type="button"
               onClick={() => onSelect(thread.id)}
-              className="flex flex-col gap-1.5 px-4 py-3 border-b text-left"
+              className="flex flex-col gap-1.5 px-4 py-3.5 border-b text-left active:opacity-80"
               style={{ borderColor: "#1a1208", background: active ? "rgba(245,197,24,0.07)" : "transparent" }}
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-semibold truncate" style={{ color: "#f9f3e8" }}>
+                <span className="text-sm md:text-xs font-semibold truncate" style={{ color: "#f9f3e8" }}>
                   {thread.clientName}
                 </span>
                 {unread > 0 && (
-                  <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0" style={{ background: "#ef4444", color: "#fff" }}>
+                  <span className="w-5 h-5 md:w-4 md:h-4 rounded-full flex items-center justify-center text-[10px] md:text-[9px] font-bold shrink-0" style={{ background: "#ef4444", color: "#fff" }}>
                     {unread}
                   </span>
                 )}
@@ -678,12 +715,35 @@ function ThreadsPanel({
           );
         })}
       </div>
-      <div className="flex-1 overflow-hidden">
+      <div className={`${showList ? "hidden md:flex" : "flex"} flex-1 min-w-0 min-h-0 overflow-hidden flex-col`}>
         {selected ? (
-          <ThreadChat key={selected.id} thread={selected} onUpdate={onUpdate} />
+          <>
+            <div
+              className="md:hidden flex items-center gap-2 px-3 py-2.5 border-b shrink-0"
+              style={{ borderColor: "#2e2010", background: "#120d07" }}
+            >
+              <button
+                type="button"
+                onClick={() => onSelect(null)}
+                className="flex items-center gap-1.5 text-xs font-semibold px-2 py-1.5 rounded-lg border"
+                style={{ borderColor: "#2e2010", color: "#f5c518" }}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Liste
+              </button>
+              <span className="text-xs font-medium truncate" style={{ color: "#f9f3e8" }}>
+                {selected.clientName}
+              </span>
+            </div>
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <ThreadChat key={selected.id} thread={selected} onUpdate={onUpdate} />
+            </div>
+          </>
         ) : (
-          <div className="h-full flex items-center justify-center">
-            <p className="text-sm" style={{ color: "#4a3a28" }}>Sélectionner une discussion</p>
+          <div className="h-full flex items-center justify-center px-4">
+            <p className="text-sm text-center" style={{ color: "#4a3a28" }}>
+              Sélectionner une discussion
+            </p>
           </div>
         )}
       </div>
@@ -748,14 +808,26 @@ export default function AdminPage() {
     setAuthed(false);
   }
 
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  function switchTab(id: Tab) {
+    setTab(id);
+    setMenuOpen(false);
+    // Reset master-detail sur mobile à chaque changement d'onglet
+    setSelectedOrderId(null);
+    setSelectedThreadId(null);
+  }
+
   if (!authed) return <LoginScreen onLogin={handleLogin} />;
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: "#0a0703" }}>
-
-      {/* ── Sidebar ────────────────────────────────────────────────────── */}
+    <div
+      className="flex flex-col md:flex-row h-[100dvh] overflow-hidden"
+      style={{ background: "#0a0703" }}
+    >
+      {/* ── Sidebar desktop ────────────────────────────────────────────── */}
       <aside
-        className="w-56 shrink-0 flex flex-col border-r"
+        className="hidden md:flex w-56 shrink-0 flex-col border-r"
         style={{ background: "#0f0b07", borderColor: "#2e2010" }}
       >
         <div className="px-5 py-5 border-b" style={{ borderColor: "#2e2010" }}>
@@ -765,7 +837,7 @@ export default function AdminPage() {
           <p className="text-xs mt-0.5" style={{ color: "#6b5540" }}>Administration</p>
         </div>
 
-        <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
+        <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto">
           {TABS.map(({ id, label, Icon }) => {
             const badge =
               id === "orders" ? notifications.orderMessages :
@@ -774,7 +846,8 @@ export default function AdminPage() {
             return (
               <button
                 key={id}
-                onClick={() => setTab(id)}
+                type="button"
+                onClick={() => switchTab(id)}
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-all"
                 style={{
                   background: active ? "rgba(245,197,24,0.1)" : "transparent",
@@ -796,6 +869,7 @@ export default function AdminPage() {
 
         <div className="px-3 py-4 border-t" style={{ borderColor: "#2e2010" }}>
           <button
+            type="button"
             onClick={handleLogout}
             className="flex items-center gap-2 px-3 py-2 w-full rounded-xl text-sm hover:opacity-70 transition-opacity"
             style={{ color: "#6b5540" }}
@@ -807,17 +881,36 @@ export default function AdminPage() {
       </aside>
 
       {/* ── Main ───────────────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
 
-        {/* Top bar */}
+        {/* Top bar mobile + desktop */}
         <header
-          className="flex items-center justify-between px-6 py-4 border-b shrink-0"
+          className="flex items-center justify-between gap-2 px-3 sm:px-6 py-3 sm:py-4 border-b shrink-0"
           style={{ borderColor: "#2e2010", background: "#0f0b07" }}
         >
-          <h2 className="font-semibold text-sm" style={{ color: "#f9f3e8" }}>
-            {TABS.find((t) => t.id === tab)?.label}
-          </h2>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              className="md:hidden p-2 rounded-lg border shrink-0"
+              style={{ borderColor: "#2e2010", color: "#f5c518" }}
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label="Menu"
+            >
+              {menuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+            <div className="min-w-0">
+              <p className="md:hidden font-bold text-sm truncate" style={{ color: "#f9f3e8" }}>
+                Apéro<span style={{ color: "#f5c518" }}>Maison</span>
+              </p>
+              <h2 className="font-semibold text-xs sm:text-sm truncate" style={{ color: "#f9f3e8" }}>
+                <span className="md:inline hidden">{TABS.find((t) => t.id === tab)?.label}</span>
+                <span className="md:hidden" style={{ color: "#a89272" }}>
+                  {TABS.find((t) => t.id === tab)?.label}
+                </span>
+              </h2>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {notifications.total > 0 && (
               <div className="relative">
                 <Bell className="w-4 h-4" style={{ color: "#a89272" }} />
@@ -826,15 +919,61 @@ export default function AdminPage() {
                 </span>
               </div>
             )}
-            <span className="text-xs" style={{ color: "#6b5540" }}>admin</span>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="md:hidden p-2 rounded-lg border"
+              style={{ borderColor: "#2e2010", color: "#a89272" }}
+              aria-label="Déconnexion"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+            <span className="hidden md:inline text-xs" style={{ color: "#6b5540" }}>admin</span>
           </div>
         </header>
 
-        {/* Tab content */}
-        <div className="flex-1 overflow-hidden flex flex-col">
+        {/* Menu mobile déroulant */}
+        {menuOpen && (
+          <div
+            className="md:hidden border-b shrink-0 max-h-[50dvh] overflow-y-auto"
+            style={{ borderColor: "#2e2010", background: "#0f0b07" }}
+          >
+            <nav className="flex flex-col p-2 gap-0.5">
+              {TABS.map(({ id, label, Icon }) => {
+                const badge =
+                  id === "orders" ? notifications.orderMessages :
+                  id === "messages" ? notifications.contactMessages : 0;
+                const active = tab === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => switchTab(id)}
+                    className="flex items-center gap-3 px-3 py-3 rounded-xl text-left"
+                    style={{
+                      background: active ? "rgba(245,197,24,0.1)" : "transparent",
+                      color: active ? "#f5c518" : "#a89272",
+                    }}
+                  >
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span className="flex-1 text-sm font-medium">{label}</span>
+                    {badge > 0 && (
+                      <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: "#ef4444", color: "#fff" }}>
+                        {badge > 9 ? "9+" : badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        )}
+
+        {/* Tab content — padding bas pour la nav mobile */}
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col pb-[4.25rem] md:pb-0">
 
           {tab === "dashboard" && (
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 min-h-0 overflow-y-auto">
               <Dashboard onLogout={handleLogout} />
             </div>
           )}
@@ -876,13 +1015,64 @@ export default function AdminPage() {
           )}
 
           {tab === "tour" && (
-            <div className="flex-1 overflow-hidden flex flex-col">
+            <div className="flex-1 min-h-0 overflow-hidden flex flex-col min-w-0">
               <DeliveryTourMap orders={[...orders, ...archivedOrders]} />
             </div>
           )}
 
         </div>
       </div>
+
+      {/* ── Bottom nav mobile ──────────────────────────────────────────── */}
+      <nav
+        className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t safe-area-pb"
+        style={{
+          background: "rgba(15,11,7,0.97)",
+          borderColor: "#2e2010",
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        }}
+      >
+        <div className="flex items-stretch justify-between px-0.5 pt-1 pb-1">
+          {TABS.map(({ id, label, Icon }) => {
+            const badge =
+              id === "orders" ? notifications.orderMessages :
+              id === "messages" ? notifications.contactMessages : 0;
+            const active = tab === id;
+            // Labels courts pour le bas d'écran
+            const short =
+              id === "dashboard" ? "Board" :
+              id === "orders" ? "Cmd" :
+              id === "archives" ? "Arch." :
+              id === "messages" ? "Msg" :
+              id === "archived_messages" ? "Msg arch." :
+              "Tournée";
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => switchTab(id)}
+                className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-1.5 px-0.5 min-w-0"
+                style={{ color: active ? "#f5c518" : "#6b5540" }}
+              >
+                <span className="relative">
+                  <Icon className="w-5 h-5" />
+                  {badge > 0 && (
+                    <span
+                      className="absolute -top-1 -right-2 min-w-[14px] h-3.5 px-0.5 rounded-full flex items-center justify-center text-[8px] font-bold"
+                      style={{ background: "#ef4444", color: "#fff" }}
+                    >
+                      {badge > 9 ? "9+" : badge}
+                    </span>
+                  )}
+                </span>
+                <span className="text-[9px] font-medium truncate max-w-full leading-tight">
+                  {short}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }
