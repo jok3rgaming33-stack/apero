@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import type { Order } from "@/lib/orders-store";
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from "@/lib/orders-store";
+// CSS Leaflet obligatoire — sans lui les tuiles se fragmentent (256px mal positionnées).
+import "leaflet/dist/leaflet.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -265,8 +267,11 @@ export default function DeliveryTourMap({ orders }: { orders: Order[] }) {
   // ── Init Leaflet map ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (!mapRef.current || leafletMapRef.current) return;
+    let cancelled = false;
+    let ro: ResizeObserver | null = null;
 
     import("leaflet").then((mod) => {
+      if (cancelled || !mapRef.current || leafletMapRef.current) return;
       const L = mod.default;
 
       delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -276,7 +281,7 @@ export default function DeliveryTourMap({ orders }: { orders: Order[] }) {
         shadowUrl:     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
       });
 
-      const map = L.map(mapRef.current!, {
+      const map = L.map(mapRef.current, {
         center: departure,
         zoom: 12,
         scrollWheelZoom: true,
@@ -287,9 +292,9 @@ export default function DeliveryTourMap({ orders }: { orders: Order[] }) {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(map);
 
-      // Departure marker — red, draggable
+      // Departure marker — red, draggable (style Apero)
       const depIcon = L.divIcon({
-        className: "",
+        className: "apero-map-icon",
         html: `<div style="width:24px;height:24px;background:#ef4444;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,0.5);cursor:grab;display:flex;align-items:center;justify-content:center">
           <div style="width:6px;height:6px;background:#fff;border-radius:50%"></div>
         </div>`,
@@ -322,11 +327,44 @@ export default function DeliveryTourMap({ orders }: { orders: Order[] }) {
       depMarkerRef.current = depMarker;
       leafletMapRef.current = map;
       setMapReady(true);
+
+      // Critical: recalcule la taille des tuiles une fois le conteneur mesuré
+      // (évite le rendu « tuiles en damiers » vu en prod).
+      const fixSize = () => {
+        try {
+          map.invalidateSize({ animate: false });
+        } catch {
+          /* ignore */
+        }
+      };
+      requestAnimationFrame(() => {
+        fixSize();
+        setTimeout(fixSize, 50);
+        setTimeout(fixSize, 250);
+        setTimeout(fixSize, 600);
+      });
+
+      if (typeof ResizeObserver !== "undefined" && mapRef.current) {
+        ro = new ResizeObserver(() => fixSize());
+        ro.observe(mapRef.current);
+      }
+      window.addEventListener("resize", fixSize);
+      (map as any)._aperoFixSize = fixSize;
+      (map as any)._aperoOnResize = () => fixSize();
     });
 
     return () => {
-      leafletMapRef.current?.remove();
+      cancelled = true;
+      ro?.disconnect();
+      const map = leafletMapRef.current;
+      if (map) {
+        const onResize = (map as any)._aperoOnResize as (() => void) | undefined;
+        if (onResize) window.removeEventListener("resize", onResize);
+        map.remove();
+      }
       leafletMapRef.current = null;
+      depMarkerRef.current = null;
+      setMapReady(false);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -349,7 +387,7 @@ export default function DeliveryTourMap({ orders }: { orders: Order[] }) {
     selected.forEach((stop, idx) => {
       const color = DAY_COLORS[stop.day];
       const icon = L.divIcon({
-        className: "",
+        className: "apero-map-icon",
         html: `<div style="width:30px;height:30px;background:${color};border-radius:50%;border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;box-shadow:0 2px 10px rgba(0,0,0,0.55)">${idx + 1}</div>`,
         iconSize: [30, 30],
         iconAnchor: [15, 15],
@@ -371,7 +409,7 @@ export default function DeliveryTourMap({ orders }: { orders: Order[] }) {
     unselected.forEach((stop) => {
       const color = DAY_COLORS[stop.day];
       const icon = L.divIcon({
-        className: "",
+        className: "apero-map-icon",
         html: `<div style="width:14px;height:14px;background:${color};border-radius:50%;border:1.5px solid rgba(255,255,255,0.6);opacity:0.5;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>`,
         iconSize: [14, 14],
         iconAnchor: [7, 7],
@@ -423,6 +461,26 @@ export default function DeliveryTourMap({ orders }: { orders: Order[] }) {
 
       setRouteKm(result.distance / 1000);
       setRouteMins(Math.round(result.duration / 60));
+
+      // Cadre la vue départ + arrêts (comme BB33)
+      try {
+        const pts: [number, number][] = [
+          departure,
+          ...selected.map((s) => [s.lat!, s.lng!] as [number, number]),
+        ];
+        if (pts.length > 1) {
+          map.fitBounds(pts, { padding: [48, 48], maxZoom: 14 });
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+
+    // Recalcule la grille de tuiles après mise à jour des layers
+    try {
+      map.invalidateSize({ animate: false });
+    } catch {
+      /* ignore */
     }
   }, [stops, mapReady, departure]);
 
@@ -534,20 +592,64 @@ export default function DeliveryTourMap({ orders }: { orders: Order[] }) {
         ))}
       </div>
 
-      {/* ── Map + Sidebar ─────────────────────────────────────────────────── */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* ── Map + Sidebar (hauteur min comme BB33 pour un rendu tuiles correct) ── */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
 
-        {/* Map */}
-        <div className="flex-1 relative">
-          <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
+        {/* Map — conteneur avec hauteur réelle (évite height:100% sur parent flou) */}
+        <div
+          className="relative min-h-[420px] w-full flex-1 overflow-hidden lg:min-h-0"
+          style={{ background: "#0d0906" }}
+        >
+          <div
+            ref={mapRef}
+            className="absolute inset-0 z-0 h-full w-full"
+            style={{ background: "#0d0906" }}
+            aria-label="Carte tournée de livraison"
+          />
+          {/* Styles Leaflet adaptés au thème Apero (fond sombre, pas de tuiles cassées) */}
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
+            .leaflet-container {
+              background: #0d0906 !important;
+              font: inherit;
+              width: 100% !important;
+              height: 100% !important;
+            }
+            .leaflet-control-attribution {
+              background: rgba(15, 11, 7, 0.85) !important;
+              color: #6b5540 !important;
+            }
+            .leaflet-control-attribution a {
+              color: #a89272 !important;
+            }
+            .apero-map-icon {
+              background: transparent !important;
+              border: none !important;
+            }
+            .leaflet-tooltip {
+              background: transparent !important;
+              border: none !important;
+              box-shadow: none !important;
+              padding: 0 !important;
+            }
+            .leaflet-tooltip-top:before {
+              display: none !important;
+            }
+          `,
+            }}
+          />
           {!mapReady && (
-            <div className="absolute inset-0 flex items-center justify-center" style={{ background: "#0a0703" }}>
+            <div
+              className="absolute inset-0 z-10 flex items-center justify-center"
+              style={{ background: "#0a0703" }}
+            >
               <Loader2 className="w-8 h-8 animate-spin" style={{ color: "#f5c518" }} />
             </div>
           )}
           {routingBusy && (
             <div
-              className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+              className="absolute left-1/2 top-3 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold"
               style={{ background: "#1a1208", border: "1px solid #2e2010", color: "#f5c518" }}
             >
               <Loader2 className="w-3 h-3 animate-spin" />
@@ -558,8 +660,11 @@ export default function DeliveryTourMap({ orders }: { orders: Order[] }) {
 
         {/* Sidebar */}
         <div
-          className="w-72 shrink-0 flex flex-col border-l overflow-hidden"
-          style={{ background: "#0f0b07", borderColor: "#2e2010" }}
+          className="flex max-h-[42vh] w-full shrink-0 flex-col overflow-hidden border-t lg:max-h-none lg:w-72 lg:border-l lg:border-t-0"
+          style={{
+            background: "#0f0b07",
+            borderColor: "#2e2010",
+          }}
         >
           {/* Sidebar header */}
           <div className="px-4 py-3 border-b shrink-0" style={{ borderColor: "#2e2010" }}>
@@ -632,9 +737,9 @@ export default function DeliveryTourMap({ orders }: { orders: Order[] }) {
           </div>
 
           {/* Stop list */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="min-h-0 flex-1 overflow-y-auto lg:max-h-none" style={{ maxHeight: "none" }}>
             {selectedStops.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full gap-3 px-6 text-center">
+              <div className="flex flex-col items-center justify-center gap-3 px-6 py-10 text-center">
                 <Navigation className="w-8 h-8 opacity-20" style={{ color: "#f5c518" }} />
                 <p className="text-sm" style={{ color: "#4a3a28" }}>
                   Aucune commande à livrer pour le moment.
